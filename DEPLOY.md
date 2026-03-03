@@ -95,7 +95,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 51 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, exception handler integration)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 51 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, exception handler integration). All pass as of milestone 04a.
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
@@ -124,6 +124,24 @@ Test stub fix:
 
 Playwright test fix:
 - The Swagger UI test for `/projects/{projectId}/runs` endpoint used `hasText` filter which matched both `/runs` and `/runs/{runId}/logs`. Fixed by using `data-path` attribute selector instead.
+
+## Response DTOs (milestone 04a)
+
+New model records added for upcoming log content and tail endpoints:
+- `Models/LogContentResponse.cs` — `record LogContentResponse(string ProjectId, string RunId, string Name, long Size, long Offset, DateTimeOffset LastModified, string Content)` — JSON envelope for log file content retrieval
+- `Models/LogTailResponse.cs` — `record LogTailResponse(string ProjectId, string RunId, string Name, long TotalSize, int LinesReturned, string Content)` — JSON envelope for tail endpoint
+- `Models/BlobContentResult.cs` — `record BlobContentResult(string Content, long Size, long Offset, DateTimeOffset LastModified, string ContentType)` — internal service result carrying blob content and metadata
+
+## Code Cleanup (milestone 04a)
+
+- Extracted `ContainerExistsAsync(BlobContainerClient, CancellationToken)` private helper in `BlobStorageService` to deduplicate container-exists checks (fixes #47)
+- Fixed env var save/restore in `ExceptionHandlerIntegrationTests` and `ProjectEndpointIntegrationTests` (fixes #46)
+- Removed duplicate `validation-results.txt` entry from `.gitignore` (fixes #44)
+- `StubBlobStorageService` now implements `ProjectExistsAsync` and `ListRunLogsAsync` with `LogsByProjectAndRun` dictionary (fixes #45)
+
+## Known Bug — Health Endpoint (issue #54)
+
+The health endpoint catches `RequestFailedException` but not `AuthenticationFailedException` / `CredentialUnavailableException`. When `DefaultAzureCredential` can't get a token, the exception falls through to the global handler returning 500 instead of the health endpoint's intended 503 with `{"error":"Storage account unreachable"}`. This affects all environments without real Azure credentials.
 
 ## Known Gotchas
 
