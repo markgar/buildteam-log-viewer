@@ -1,5 +1,6 @@
 using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using LogViewerApi.Models;
 
 namespace LogViewerApi.Services;
@@ -84,6 +85,42 @@ public class BlobStorageService : IBlobStorageService
         {
             return false;
         }
+    }
+
+    public async Task<BlobContentResult?> GetLogContentAsync(string projectId, string runId, string fileName, long offset, CancellationToken cancellationToken = default)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+        var blobPath = $"{runId}/{fileName}";
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        BlobProperties properties;
+        try
+        {
+            properties = (await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken)).Value;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
+        }
+
+        var blobSize = properties.ContentLength;
+        var contentType = properties.ContentType ?? "application/octet-stream";
+        var lastModified = properties.LastModified;
+
+        if (offset >= blobSize)
+        {
+            return new BlobContentResult("", blobSize, blobSize, lastModified, contentType);
+        }
+
+        var downloadOptions = new BlobDownloadOptions
+        {
+            Range = new HttpRange(offset, blobSize - offset)
+        };
+        var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
+        using var reader = new StreamReader(download.Value.Content);
+        var content = await reader.ReadToEndAsync(cancellationToken);
+
+        return new BlobContentResult(content, blobSize, blobSize, lastModified, contentType);
     }
 
     public async Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId, CancellationToken cancellationToken = default)
