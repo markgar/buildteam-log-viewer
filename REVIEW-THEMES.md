@@ -1,6 +1,6 @@
 # Review Themes
 
-Last updated: Kubernetes manifests
+Last updated: Bug fixes (open findings)
 
 1. **Pin dependency versions** — Never use floating/wildcard NuGet versions (`1.13.*`). Pin exact patch versions for reproducible builds. (#5)
 2. **Validate configuration inputs at startup** — When reading environment variables, validate format (e.g., URI well-formedness) in addition to presence, and include the variable name in error messages. (#4)
