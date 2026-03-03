@@ -9,6 +9,7 @@ public class StubBlobStorageService : IBlobStorageService
     public Dictionary<string, List<RunInfo>> RunsByProject { get; set; } = new();
     public Dictionary<string, LogListResponse> LogsByRun { get; set; } = new();
     public Dictionary<string, BlobContentResult> ContentByKey { get; set; } = new();
+    public Dictionary<string, LogTailResponse> TailByKey { get; set; } = new();
     public Exception? ExceptionToThrow { get; set; }
 
     public Task CheckStorageHealthAsync(CancellationToken cancellationToken = default)
@@ -53,5 +54,14 @@ public class StubBlobStorageService : IBlobStorageService
         if (ContentByKey.TryGetValue(key, out var result))
             return Task.FromResult<BlobContentResult?>(result);
         return Task.FromResult<BlobContentResult?>(null);
+    }
+
+    public Task<LogTailResponse?> GetLogTailAsync(string projectId, string runId, string fileName, int lines, CancellationToken cancellationToken = default)
+    {
+        if (ExceptionToThrow is not null) throw ExceptionToThrow;
+        var key = $"{projectId}/{runId}/{fileName}";
+        if (TailByKey.TryGetValue(key, out var result))
+            return Task.FromResult<LogTailResponse?>(result);
+        return Task.FromResult<LogTailResponse?>(null);
     }
 }
