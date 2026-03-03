@@ -9,11 +9,11 @@ public static class HealthEndpoints
 {
     public static WebApplication MapHealthEndpoints(this WebApplication app)
     {
-        app.MapGet("/health", async (IBlobStorageService service) =>
+        app.MapGet("/health", async (IBlobStorageService service, CancellationToken ct) =>
         {
             try
             {
-                await service.CheckStorageHealthAsync();
+                await service.CheckStorageHealthAsync(ct);
                 return Results.Ok(new HealthResponse("ok"));
             }
             catch (RequestFailedException)

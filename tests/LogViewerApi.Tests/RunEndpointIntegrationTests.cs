@@ -13,9 +13,11 @@ public class RunEndpointIntegrationTests : IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
+    private readonly string? _savedStorageAccountUrl;
 
     public RunEndpointIntegrationTests()
     {
+        _savedStorageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
         var stub = new StubBlobStorageService
         {
             RunsByProject =
@@ -79,6 +81,7 @@ public class RunEndpointIntegrationTests : IDisposable
     {
         _client.Dispose();
         _factory.Dispose();
+        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", _savedStorageAccountUrl);
     }
 
     [Fact]

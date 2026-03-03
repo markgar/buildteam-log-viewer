@@ -13,9 +13,11 @@ public class RunLogEndpointCrossFeatureTests : IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
+    private readonly string? _savedStorageAccountUrl;
 
     public RunLogEndpointCrossFeatureTests()
     {
+        _savedStorageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
         var stub = new StubBlobStorageService
         {
             Projects = new List<ProjectInfo>
@@ -62,6 +64,7 @@ public class RunLogEndpointCrossFeatureTests : IDisposable
     {
         _client.Dispose();
         _factory.Dispose();
+        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", _savedStorageAccountUrl);
     }
 
     [Fact]

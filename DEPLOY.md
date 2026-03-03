@@ -39,7 +39,9 @@
 
 ## Health Check
 
-- **`GET /health`** → 200 `{"status":"ok"}` — fully implemented as of milestone 01b
+- **`GET /health`** → 200 `{"status":"ok"}` when storage is reachable
+- **`GET /health`** → 503 `{"error":"Storage account unreachable"}` when storage connectivity check fails
+- Actively verifies blob storage by calling `GetAccountInfoAsync()`
 - Mapped via `HealthEndpoints.MapHealthEndpoints()` extension method
 - Listed in OpenAPI spec at `/openapi/v1.json`
 
