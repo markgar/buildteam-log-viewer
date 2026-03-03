@@ -18,7 +18,7 @@ public class ResponseModelSerializationTests
         var project = new ProjectInfo("my-project", timestamp);
 
         var json = JsonSerializer.Serialize(project, SnakeCaseOptions);
-        var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
         Assert.True(doc.RootElement.TryGetProperty("id", out var idProp));
         Assert.Equal("my-project", idProp.GetString());
@@ -38,7 +38,7 @@ public class ResponseModelSerializationTests
         var response = new ProjectListResponse(projects);
 
         var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
-        var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
         Assert.True(doc.RootElement.TryGetProperty("projects", out var projectsProp));
         Assert.Equal(JsonValueKind.Array, projectsProp.ValueKind);
@@ -57,7 +57,7 @@ public class ResponseModelSerializationTests
         var run = new RunInfo("20260301-140000", timestamp);
 
         var json = JsonSerializer.Serialize(run, SnakeCaseOptions);
-        var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
         Assert.True(doc.RootElement.TryGetProperty("id", out var idProp));
         Assert.Equal("20260301-140000", idProp.GetString());
@@ -77,7 +77,7 @@ public class ResponseModelSerializationTests
         var response = new RunListResponse("my-project", runs);
 
         var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
-        var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
         Assert.True(doc.RootElement.TryGetProperty("project_id", out var projectIdProp));
         Assert.Equal("my-project", projectIdProp.GetString());

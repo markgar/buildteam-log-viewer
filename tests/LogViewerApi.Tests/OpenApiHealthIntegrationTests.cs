@@ -21,7 +21,7 @@ public class OpenApiHealthIntegrationTests : IClassFixture<CustomWebApplicationF
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var content = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(content);
+        using var doc = JsonDocument.Parse(content);
         var paths = doc.RootElement.GetProperty("paths");
 
         Assert.True(paths.TryGetProperty("/health", out _),
@@ -33,7 +33,7 @@ public class OpenApiHealthIntegrationTests : IClassFixture<CustomWebApplicationF
     {
         var response = await _client.GetAsync("/openapi/v1.json");
         var content = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(content);
+        using var doc = JsonDocument.Parse(content);
 
         var healthPath = doc.RootElement.GetProperty("paths").GetProperty("/health");
         Assert.True(healthPath.TryGetProperty("get", out var getOp),

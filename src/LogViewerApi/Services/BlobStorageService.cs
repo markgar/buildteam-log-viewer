@@ -96,26 +96,33 @@ public class BlobStorageService : IBlobStorageService
         var prompts = new List<LogItemInfo>();
         var artifacts = new List<LogItemInfo>();
 
-        await foreach (var blob in containerClient.GetBlobsAsync(prefix: runId + "/", cancellationToken: cancellationToken))
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var relativeName = blob.Name[(runId.Length + 1)..];
-            var size = blob.Properties.ContentLength ?? 0;
-            var lastModified = blob.Properties.LastModified ?? DateTimeOffset.MinValue;
+            await foreach (var blob in containerClient.GetBlobsAsync(prefix: runId + "/", cancellationToken: cancellationToken))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var relativeName = blob.Name[(runId.Length + 1)..];
+                var size = blob.Properties.ContentLength ?? 0;
+                var lastModified = blob.Properties.LastModified ?? DateTimeOffset.MinValue;
 
-            if (relativeName.StartsWith("prompts/"))
-            {
-                var displayName = relativeName["prompts/".Length..];
-                prompts.Add(new LogItemInfo(displayName, size, lastModified));
+                if (relativeName.StartsWith("prompts/"))
+                {
+                    var displayName = relativeName["prompts/".Length..];
+                    prompts.Add(new LogItemInfo(displayName, size, lastModified));
+                }
+                else if (relativeName.EndsWith(".log"))
+                {
+                    logs.Add(new LogItemInfo(relativeName, size, lastModified));
+                }
+                else
+                {
+                    artifacts.Add(new LogItemInfo(relativeName, size, lastModified));
+                }
             }
-            else if (relativeName.EndsWith(".log"))
-            {
-                logs.Add(new LogItemInfo(relativeName, size, lastModified));
-            }
-            else
-            {
-                artifacts.Add(new LogItemInfo(relativeName, size, lastModified));
-            }
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
         }
 
         if (logs.Count == 0 && prompts.Count == 0 && artifacts.Count == 0)
