@@ -1,0 +1,11 @@
+.git
+bin
+obj
+node_modules
+dist
+__pycache__
+.venv
+*.user
+*.suo
+.vs
+e2e/node_modules

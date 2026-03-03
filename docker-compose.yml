@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    ports:
+      - "7202:8080"
+    environment:
+      - STORAGE_ACCOUNT_URL=https://fake.blob.core.windows.net
+      - ASPNETCORE_URLS=http://+:8080
+
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.52.0-noble
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    environment:
+      - BASE_URL=http://app:8080
+    depends_on:
+      - app
+    profiles:
+      - test
