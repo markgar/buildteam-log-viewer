@@ -90,4 +90,120 @@ public class ResponseModelSerializationTests
         Assert.True(first.TryGetProperty("id", out _));
         Assert.True(first.TryGetProperty("last_modified", out _));
     }
+
+    [Fact]
+    public void LogItemInfo_SerializesToSnakeCaseWithNameSizeAndLastModified()
+    {
+        var timestamp = new DateTimeOffset(2026, 3, 1, 9, 15, 0, TimeSpan.Zero);
+        var logItem = new LogItemInfo("build-output.log", 204800, timestamp);
+
+        var json = JsonSerializer.Serialize(logItem, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("name", out var nameProp));
+        Assert.Equal("build-output.log", nameProp.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("size", out var sizeProp));
+        Assert.Equal(204800, sizeProp.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("last_modified", out var lastModProp));
+        Assert.Contains("2026-03-01", lastModProp.GetString());
+    }
+
+    [Fact]
+    public void LogListResponse_SerializesToSnakeCaseWithAllCategories()
+    {
+        var timestamp = new DateTimeOffset(2026, 3, 1, 10, 0, 0, TimeSpan.Zero);
+        var logs = new List<LogItemInfo>
+        {
+            new("build.log", 1024, timestamp),
+            new("deploy.log", 2048, timestamp)
+        };
+        var prompts = new List<LogItemInfo>
+        {
+            new("system-prompt.md", 512, timestamp)
+        };
+        var artifacts = new List<LogItemInfo>
+        {
+            new("output.zip", 1048576, timestamp)
+        };
+        var response = new LogListResponse("my-project", "20260301-100000", logs, prompts, artifacts);
+
+        var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("project_id", out var projectIdProp));
+        Assert.Equal("my-project", projectIdProp.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("run_id", out var runIdProp));
+        Assert.Equal("20260301-100000", runIdProp.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("logs", out var logsProp));
+        Assert.Equal(2, logsProp.GetArrayLength());
+        var firstLog = logsProp[0];
+        Assert.True(firstLog.TryGetProperty("name", out var logName));
+        Assert.Equal("build.log", logName.GetString());
+        Assert.True(firstLog.TryGetProperty("size", out _));
+        Assert.True(firstLog.TryGetProperty("last_modified", out _));
+
+        Assert.True(doc.RootElement.TryGetProperty("prompts", out var promptsProp));
+        Assert.Equal(1, promptsProp.GetArrayLength());
+
+        Assert.True(doc.RootElement.TryGetProperty("artifacts", out var artifactsProp));
+        Assert.Equal(1, artifactsProp.GetArrayLength());
+    }
+
+    [Fact]
+    public void LogListResponse_WithEmptyCategories_SerializesToValidJson()
+    {
+        var response = new LogListResponse(
+            "empty-project",
+            "20260301-000000",
+            new List<LogItemInfo>(),
+            new List<LogItemInfo>(),
+            new List<LogItemInfo>());
+
+        var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("project_id", out var projectIdProp));
+        Assert.Equal("empty-project", projectIdProp.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("logs", out var logsProp));
+        Assert.Equal(0, logsProp.GetArrayLength());
+
+        Assert.True(doc.RootElement.TryGetProperty("prompts", out var promptsProp));
+        Assert.Equal(0, promptsProp.GetArrayLength());
+
+        Assert.True(doc.RootElement.TryGetProperty("artifacts", out var artifactsProp));
+        Assert.Equal(0, artifactsProp.GetArrayLength());
+    }
+
+    [Fact]
+    public void LogListResponse_WithMixedPopulatedAndEmptyCategories_SerializesCorrectly()
+    {
+        var timestamp = new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero);
+        var logs = new List<LogItemInfo>
+        {
+            new("agent.log", 4096, timestamp)
+        };
+        var response = new LogListResponse(
+            "mixed-project",
+            "20260301-120000",
+            logs,
+            new List<LogItemInfo>(),
+            new List<LogItemInfo>());
+
+        var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("logs", out var logsProp));
+        Assert.Equal(1, logsProp.GetArrayLength());
+
+        Assert.True(doc.RootElement.TryGetProperty("prompts", out var promptsProp));
+        Assert.Equal(0, promptsProp.GetArrayLength());
+
+        Assert.True(doc.RootElement.TryGetProperty("artifacts", out var artifactsProp));
+        Assert.Equal(0, artifactsProp.GetArrayLength());
+    }
 }
