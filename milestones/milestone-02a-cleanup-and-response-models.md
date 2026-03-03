@@ -24,7 +24,7 @@
 
 ### Response DTOs
 
-- [ ] Create `Models/ProjectInfo.cs` — `public record ProjectInfo(string Id, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
+- [x] Create `Models/ProjectInfo.cs` — `public record ProjectInfo(string Id, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
 - [ ] Create `Models/ProjectListResponse.cs` — `public record ProjectListResponse(IReadOnlyList<ProjectInfo> Projects)` in namespace `LogViewerApi.Models`
 - [ ] Create `Models/RunInfo.cs` — `public record RunInfo(string Id, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
 - [ ] Create `Models/RunListResponse.cs` — `public record RunListResponse(string ProjectId, IReadOnlyList<RunInfo> Runs)` in namespace `LogViewerApi.Models`
