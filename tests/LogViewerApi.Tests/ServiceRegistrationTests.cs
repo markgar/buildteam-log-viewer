@@ -5,30 +5,46 @@ using Xunit;
 
 namespace LogViewerApi.Tests;
 
+[Collection("EnvironmentTests")]
 public class ServiceRegistrationTests
 {
     [Fact]
     public void IBlobStorageService_IsResolvableFromDI()
     {
-        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
+        var saved = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
+        try
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
 
-        using var factory = new WebApplicationFactory<Program>();
-        using var scope = factory.Services.CreateScope();
-        var service = scope.ServiceProvider.GetService<IBlobStorageService>();
+            using var factory = new WebApplicationFactory<Program>();
+            using var scope = factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetService<IBlobStorageService>();
 
-        Assert.NotNull(service);
+            Assert.NotNull(service);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", saved);
+        }
     }
 
     [Fact]
     public void IBlobStorageService_ResolvesToBlobStorageService()
     {
-        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
+        var saved = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
+        try
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
 
-        using var factory = new WebApplicationFactory<Program>();
-        using var scope = factory.Services.CreateScope();
-        var service = scope.ServiceProvider.GetService<IBlobStorageService>();
+            using var factory = new WebApplicationFactory<Program>();
+            using var scope = factory.Services.CreateScope();
+            var service = scope.ServiceProvider.GetService<IBlobStorageService>();
 
-        Assert.IsType<BlobStorageService>(service);
+            Assert.IsType<BlobStorageService>(service);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", saved);
+        }
     }
-
 }

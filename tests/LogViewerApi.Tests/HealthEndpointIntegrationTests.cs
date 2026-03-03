@@ -4,6 +4,7 @@ using Xunit;
 
 namespace LogViewerApi.Tests;
 
+[Collection("EnvironmentTests")]
 public class HealthEndpointIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
@@ -26,7 +27,7 @@ public class HealthEndpointIntegrationTests : IClassFixture<CustomWebApplication
     {
         var response = await _client.GetAsync("/health");
         var content = await response.Content.ReadAsStringAsync();
-        var doc = JsonDocument.Parse(content);
+        using var doc = JsonDocument.Parse(content);
 
         Assert.True(doc.RootElement.TryGetProperty("status", out var statusProp));
         Assert.Equal("ok", statusProp.GetString());
