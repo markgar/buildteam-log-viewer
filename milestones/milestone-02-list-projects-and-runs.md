@@ -1,0 +1,42 @@
+# Milestone: List projects & runs
+
+> **Validates:** After building and starting the app (with `STORAGE_ACCOUNT_URL` set to any valid URL, e.g. `https://fake.blob.core.windows.net`):
+> - `GET /health` → 200 with `{"status":"ok"}`
+> - `GET /projects` → responds (200 with JSON `{"projects":[...]}` if storage is reachable, or 500 with `{"error":"Storage account unavailable: ..."}` if not)
+> - `GET /projects/nonexistent-project-xyz/runs` → 404 with `{"error":"Project not found"}` if storage is reachable, or 500 if not
+> - `GET /openapi/v1.json` → 200, response body contains paths `/projects` and `/projects/{projectId}/runs`
+> - `GET /swagger/index.html` → 200 with HTML
+
+> **Reference files:**
+> - `src/LogViewerApi/Program.cs` — entry point, DI registration, endpoint mapping
+> - `src/LogViewerApi/Services/IBlobStorageService.cs` — service interface (currently empty)
+> - `src/LogViewerApi/Services/BlobStorageService.cs` — service implementation with injected `BlobServiceClient`
+> - `src/LogViewerApi/Models/ErrorResponse.cs` — existing record DTO pattern
+> - `src/LogViewerApi/Endpoints/HealthEndpoints.cs` — existing endpoint extension method pattern
+
+## Tasks
+
+### Cleanup (open findings)
+
+- [ ] Remove duplicate registrations from `Program.cs` — delete the inline `app.MapGet("/health", ...)` block (lines 70-72, already mapped by `app.MapHealthEndpoints()`) and delete the duplicate `builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>()` (line 28, keeping only the `AddScoped` registration on line 37)
+- [ ] Add `.WithOpenApi()` to the health endpoint fluent chain in `Endpoints/HealthEndpoints.cs` so the `MapGet` call ends with `.WithName("Health").WithOpenApi()` (fixes #14)
+- [ ] Validate PORT environment variable in `Program.cs` — when `PORT` is set but not a valid integer between 1 and 65535, throw `InvalidOperationException` with message `"PORT environment variable must be an integer between 1 and 65535, got: '{value}'"` instead of silently falling back to 8080 (fixes #16)
+- [ ] Nest `LogViewerApi` project under the `src` solution folder in `LogViewerApi.sln` — add `{9456D2AB-019D-449A-BA24-38F6E68EF9EB} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}` to the `NestedProjects` section (fixes #13)
+
+### Response DTOs
+
+- [ ] Create `Models/ProjectInfo.cs` — `public record ProjectInfo(string Id, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
+- [ ] Create `Models/ProjectListResponse.cs` — `public record ProjectListResponse(IReadOnlyList<ProjectInfo> Projects)` in namespace `LogViewerApi.Models`
+- [ ] Create `Models/RunInfo.cs` — `public record RunInfo(string Id, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
+- [ ] Create `Models/RunListResponse.cs` — `public record RunListResponse(string ProjectId, IReadOnlyList<RunInfo> Runs)` in namespace `LogViewerApi.Models`
+
+### Service layer
+
+- [ ] Add `Task<List<ProjectInfo>> ListProjectsAsync()` to `IBlobStorageService` and implement in `BlobStorageService` — enumerate all containers via `_blobServiceClient.GetBlobContainersAsync()`, map each `BlobContainerItem` to `new ProjectInfo(item.Name, item.Properties.LastModified ?? DateTimeOffset.MinValue)`, return the list
+- [ ] Add `Task<RunListResponse?> ListRunsAsync(string projectId)` to `IBlobStorageService` and implement in `BlobStorageService` — get container client via `_blobServiceClient.GetBlobContainerClient(projectId)`, verify container exists by calling `containerClient.GetPropertiesAsync()` wrapped in try/catch for `RequestFailedException` with `Status == 404` (return `null` on not found), list all blobs via `containerClient.GetBlobsAsync()`, group by first path segment (split blob name on `"/"` and take first element), compute max `LastModified` per group, construct `RunInfo` for each group with the segment as `Id` and max date as `LastModified`, return `new RunListResponse(projectId, runs)`
+
+### Endpoints
+
+- [ ] Create `Endpoints/ProjectEndpoints.cs` with static class and `MapProjectEndpoints(this WebApplication app)` extension method containing `GET /projects` — inject `IBlobStorageService`, call `ListProjectsAsync()`, return `Results.Ok(new ProjectListResponse(projects))`, chain `.WithName("ListProjects").WithOpenApi()`
+- [ ] Add `GET /projects/{projectId}/runs` route to `ProjectEndpoints.MapProjectEndpoints` — inject `IBlobStorageService`, call `ListRunsAsync(projectId)`, if result is `null` return `Results.NotFound(new ErrorResponse("Project not found"))`, otherwise return `Results.Ok(result)`, chain `.WithName("ListRuns").WithOpenApi()`
+- [ ] Register project endpoints in `Program.cs` — add `app.MapProjectEndpoints()` call after `app.MapHealthEndpoints()`
