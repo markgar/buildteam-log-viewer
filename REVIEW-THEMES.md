@@ -1,6 +1,6 @@
 # Review Themes
 
-Last updated: Cleanup and log response models
+Last updated: List run logs endpoint
 
 1. **Pin dependency versions** — Never use floating/wildcard NuGet versions (`1.13.*`). Pin exact patch versions for reproducible builds. (#5)
 2. **Validate configuration inputs at startup** — When reading environment variables, validate format (e.g., URI well-formedness) in addition to presence, and include the variable name in error messages. (#4)
@@ -17,3 +17,4 @@ Last updated: Cleanup and log response models
 13. **Keep endpoint fluent chains consistent** — When endpoint files use a fluent pattern (e.g., `.WithName().WithOpenApi()`), apply the same chain to every endpoint. Removing a method from one endpoint while adding it to new ones creates an inconsistency that compounds as the codebase grows. (#14, #37)
 14. **Service layer returns domain data, not response DTOs** — Service methods should return raw domain objects (e.g., `List<RunInfo>`), not HTTP response DTOs (e.g., `RunListResponse`). Constructing response envelopes is the endpoint layer's job. Mixing this up blurs the architecture boundary and creates inconsistent patterns across service methods. (#39)
 15. **Test new models alongside existing ones** — When adding a test file for serialization or contract verification, cover the new models introduced in the same milestone, not just retroactive tests for pre-existing models. Deferring new-model tests to a later milestone risks shipping untested contracts. (#41)
+16. **Keep test doubles in sync with interface changes** — When adding methods to a service interface, update all implementing stubs and mocks in the same commit. A missing implementation causes immediate compilation failure that blocks all tests from running. (#45)
