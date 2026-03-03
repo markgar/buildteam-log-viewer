@@ -9,7 +9,7 @@
 
 ## Tasks
 
-- [ ] Create `src/LogViewerApi/Services/IBlobStorageService.cs` — empty interface `IBlobStorageService` in namespace `LogViewerApi.Services`
+- [x] Create `src/LogViewerApi/Services/IBlobStorageService.cs` — empty interface `IBlobStorageService` in namespace `LogViewerApi.Services`
 - [ ] Create `src/LogViewerApi/Services/BlobStorageService.cs` — class `BlobStorageService` implementing `IBlobStorageService`, accepting `BlobServiceClient` via constructor injection
 - [ ] Register `IBlobStorageService` / `BlobStorageService` as scoped in DI in `Program.cs` — `builder.Services.AddScoped<IBlobStorageService, BlobStorageService>()`
 - [ ] Create `src/LogViewerApi/Endpoints/HealthEndpoints.cs` — static class with `MapHealthEndpoints(this WebApplication app)` extension method that maps `GET /health` returning `Results.Ok(new { status = "ok" })`
