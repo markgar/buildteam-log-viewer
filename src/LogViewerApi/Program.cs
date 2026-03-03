@@ -2,6 +2,7 @@ using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using System.Text.Json;
+using LogViewerApi.Models;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,11 +42,11 @@ app.UseExceptionHandler(errorApp =>
         if (exception is RequestFailedException)
         {
             var message = $"Storage account unavailable: {exception.Message}";
-            await context.Response.WriteAsJsonAsync(new { error = message });
+            await context.Response.WriteAsJsonAsync(new ErrorResponse(message));
             return;
         }
 
-        await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred" });
+        await context.Response.WriteAsJsonAsync(new ErrorResponse("An unexpected error occurred"));
     });
 });
 
