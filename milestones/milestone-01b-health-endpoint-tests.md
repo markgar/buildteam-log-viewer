@@ -13,7 +13,7 @@
 - [x] Create `src/LogViewerApi/Services/BlobStorageService.cs` — class `BlobStorageService` implementing `IBlobStorageService`, accepting `BlobServiceClient` via constructor injection
 - [x] Register `IBlobStorageService` / `BlobStorageService` as scoped in DI in `Program.cs` — `builder.Services.AddScoped<IBlobStorageService, BlobStorageService>()`
 - [x] Create `src/LogViewerApi/Endpoints/HealthEndpoints.cs` — static class with `MapHealthEndpoints(this WebApplication app)` extension method that maps `GET /health` returning `Results.Ok(new { status = "ok" })`
-- [ ] Wire up `app.MapHealthEndpoints()` call in `Program.cs` after middleware registration
+- [x] Wire up `app.MapHealthEndpoints()` call in `Program.cs` after middleware registration
 - [ ] Create the xUnit test project (`tests/LogViewerApi.Tests/LogViewerApi.Tests.csproj`) targeting `net9.0` with package references to `Microsoft.NET.Test.Sdk`, `xunit`, `xunit.runner.visualstudio`, and a project reference to `src/LogViewerApi/LogViewerApi.csproj`
 - [ ] Add the test project to the solution file (`LogViewerApi.sln`)
 - [ ] Create `tests/LogViewerApi.Tests/HealthEndpointTests.cs` with one placeholder test method `HealthEndpoint_ReturnsOk` that asserts `true` (verifies the test framework runs)

@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using LogViewerApi.Endpoints;
 using LogViewerApi.Services;
 using Microsoft.AspNetCore.Diagnostics;
 
@@ -44,6 +45,8 @@ app.UseExceptionHandler(errorApp =>
 });
 
 app.MapOpenApi();
+
+app.MapHealthEndpoints();
 
 app.UseSwaggerUI(options =>
 {
