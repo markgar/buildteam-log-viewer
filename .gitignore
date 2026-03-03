@@ -20,3 +20,6 @@ Thumbs.db
 
 # Secrets / local config
 appsettings.Development.json
+
+# Core dumps
+core.*

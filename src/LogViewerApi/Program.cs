@@ -2,13 +2,18 @@ using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
 using System.Text.Json;
+using LogViewerApi.Endpoints;
 using LogViewerApi.Models;
 using LogViewerApi.Services;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://+:8080");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    var port = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8080;
+    options.ListenAnyIP(port);
+});
 
 var storageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL")
     ?? throw new InvalidOperationException("STORAGE_ACCOUNT_URL environment variable is required.");
@@ -28,6 +33,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 var app = builder.Build();
 
@@ -53,6 +60,8 @@ app.UseExceptionHandler(errorApp =>
 });
 
 app.MapOpenApi();
+
+app.MapHealthEndpoints();
 
 app.UseSwaggerUI(options =>
 {
