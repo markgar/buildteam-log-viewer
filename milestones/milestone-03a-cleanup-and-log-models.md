@@ -16,11 +16,11 @@
 
 ### Cleanup (open findings)
 
-- [ ] Add `using` keyword to `JsonDocument.Parse()` calls in test files — in `tests/LogViewerApi.Tests/HealthEndpointIntegrationTests.cs` change `var doc = JsonDocument.Parse(content);` to `using var doc = JsonDocument.Parse(content);`, and in `tests/LogViewerApi.Tests/ErrorResponseSerializationTests.cs` change `var doc = JsonDocument.Parse(json);` to `using var doc = JsonDocument.Parse(json);` (fixes #29)
-- [ ] Add `[Collection("EnvironmentTests")]` attribute to `HealthEndpointIntegrationTests` class in `tests/LogViewerApi.Tests/HealthEndpointIntegrationTests.cs` to prevent parallel execution with other tests that mutate `STORAGE_ACCOUNT_URL` (fixes #30)
-- [ ] Add `[Collection("EnvironmentTests")]` attribute to `ServiceRegistrationTests` class in `tests/LogViewerApi.Tests/ServiceRegistrationTests.cs`, and wrap each test method body in try/finally that saves `Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL")` before and restores it in `finally` (fixes #31)
+- [x] Add `using` keyword to `JsonDocument.Parse()` calls in test files — in `tests/LogViewerApi.Tests/HealthEndpointIntegrationTests.cs` change `var doc = JsonDocument.Parse(content);` to `using var doc = JsonDocument.Parse(content);`, and in `tests/LogViewerApi.Tests/ErrorResponseSerializationTests.cs` change `var doc = JsonDocument.Parse(json);` to `using var doc = JsonDocument.Parse(json);` (fixes #29)
+- [x] Add `[Collection("EnvironmentTests")]` attribute to `HealthEndpointIntegrationTests` class in `tests/LogViewerApi.Tests/HealthEndpointIntegrationTests.cs` to prevent parallel execution with other tests that mutate `STORAGE_ACCOUNT_URL` (fixes #30)
+- [x] Add `[Collection("EnvironmentTests")]` attribute to `ServiceRegistrationTests` class in `tests/LogViewerApi.Tests/ServiceRegistrationTests.cs`, and wrap each test method body in try/finally that saves `Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL")` before and restores it in `finally` (fixes #31)
 
 ### Response DTOs
 
-- [ ] Create `Models/LogItemInfo.cs` — `public record LogItemInfo(string Name, long Size, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
-- [ ] Create `Models/LogListResponse.cs` — `public record LogListResponse(string ProjectId, string RunId, IReadOnlyList<LogItemInfo> Logs, IReadOnlyList<LogItemInfo> Prompts, IReadOnlyList<LogItemInfo> Artifacts)` in namespace `LogViewerApi.Models`
+- [x] Create `Models/LogItemInfo.cs` — `public record LogItemInfo(string Name, long Size, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
+- [x] Create `Models/LogListResponse.cs` — `public record LogListResponse(string ProjectId, string RunId, IReadOnlyList<LogItemInfo> Logs, IReadOnlyList<LogItemInfo> Prompts, IReadOnlyList<LogItemInfo> Artifacts)` in namespace `LogViewerApi.Models`
