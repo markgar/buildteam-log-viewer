@@ -34,7 +34,7 @@ if (!Uri.TryCreate(storageAccountUrl, UriKind.Absolute, out var storageUri))
 }
 
 builder.Services.AddSingleton(new BlobServiceClient(storageUri, new DefaultAzureCredential()));
-builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -42,8 +42,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 var app = builder.Build();
 

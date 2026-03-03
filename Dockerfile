@@ -3,6 +3,7 @@ WORKDIR /src
 
 COPY LogViewerApi.sln ./
 COPY src/LogViewerApi/LogViewerApi.csproj src/LogViewerApi/
+COPY tests/LogViewerApi.Tests/LogViewerApi.Tests.csproj tests/LogViewerApi.Tests/
 RUN dotnet restore
 
 COPY . .

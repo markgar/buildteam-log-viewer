@@ -39,3 +39,17 @@ test('Swagger UI loads OpenAPI spec successfully', async ({ page }) => {
     await expect(errorWrapper).not.toBeVisible();
   }
 });
+
+test('Swagger UI shows /health endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const healthPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/health' });
+  await expect(healthPath).toBeVisible();
+});
+
+test('Health endpoint returns ok status via API', async ({ request }) => {
+  const response = await request.get('/health');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.status).toBe('ok');
+});
