@@ -35,5 +35,5 @@
 
 ### Wiring
 
-- [ ] Register `app.MapLogEndpoints()` in `Program.cs` after the existing `app.MapRunEndpoints()` call
+- [x] Register `app.MapLogEndpoints()` in `Program.cs` after the existing `app.MapRunEndpoints()` call
 - [ ] Add `GetLogContentAsync` and `GetLogTailAsync` stubs to `StubBlobStorageService` in test project — add `Dictionary<string, BlobContentResult> ContentByKey` and `Dictionary<string, LogTailResponse> TailByKey` properties, implement `GetLogContentAsync(projectId, runId, fileName, offset)` to look up `$"{projectId}/{runId}/{fileName}"` in ContentByKey (throw if ExceptionToThrow set, return null if not found), implement `GetLogTailAsync(projectId, runId, fileName, lines)` similarly using TailByKey
