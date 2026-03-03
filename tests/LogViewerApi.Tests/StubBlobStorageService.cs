@@ -12,6 +12,7 @@ public class StubBlobStorageService : IBlobStorageService
     public Dictionary<string, LogTailResponse> TailByKey { get; set; } = new();
     public Exception? ExceptionToThrow { get; set; }
     public long? LastRequestedOffset { get; private set; }
+    public int? LastRequestedLines { get; private set; }
 
     public Task CheckStorageHealthAsync(CancellationToken cancellationToken = default)
     {
@@ -61,6 +62,7 @@ public class StubBlobStorageService : IBlobStorageService
     public Task<LogTailResponse?> GetLogTailAsync(string projectId, string runId, string fileName, int lines, CancellationToken cancellationToken = default)
     {
         if (ExceptionToThrow is not null) throw ExceptionToThrow;
+        LastRequestedLines = lines;
         var key = $"{projectId}/{runId}/{fileName}";
         if (TailByKey.TryGetValue(key, out var result))
             return Task.FromResult<LogTailResponse?>(result);
