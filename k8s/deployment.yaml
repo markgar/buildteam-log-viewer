@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-viewer-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-viewer-api
+  template:
+    metadata:
+      labels:
+        app: log-viewer-api
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: buildteam-sa
+      containers:
+        - name: log-viewer-api
+          image: log-viewer-api:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: STORAGE_ACCOUNT_URL
+              value: ""
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
