@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,11 @@ if (!Uri.TryCreate(storageAccountUrl, UriKind.Absolute, out var storageUri))
 }
 
 builder.Services.AddSingleton(new BlobServiceClient(storageUri, new DefaultAzureCredential()));
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+});
 
 builder.Services.AddOpenApi();
 
