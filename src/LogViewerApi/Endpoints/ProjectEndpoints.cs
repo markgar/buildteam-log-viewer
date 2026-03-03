@@ -15,6 +15,18 @@ public static class ProjectEndpoints
             .WithName("ListProjects")
             .WithOpenApi();
 
+        app.MapGet("/projects/{projectId}/runs", async (string projectId, IBlobStorageService service) =>
+        {
+            var result = await service.ListRunsAsync(projectId);
+            if (result is null)
+            {
+                return Results.NotFound(new ErrorResponse("Project not found"));
+            }
+            return Results.Ok(result);
+        })
+            .WithName("ListRuns")
+            .WithOpenApi();
+
         return app;
     }
 }
