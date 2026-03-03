@@ -38,7 +38,7 @@ Source code lives in `src/LogViewerApi/` — this is the primary directory to ed
 
 ## Architecture
 
-`Program.cs` is the single entry point — it registers DI services, configures middleware, and maps all endpoints. Endpoint classes are thin route definitions that accept an injected service interface, bind HTTP parameters, and return response DTOs; they contain no business logic. The service layer encapsulates all Azure Blob SDK interaction behind an interface, translating blob concepts (containers, prefixes, blobs) into domain concepts (projects, runs, logs). Models are plain C# record types used only for JSON serialization — they carry no behavior. Dependencies flow inward: Endpoints → Services → Models, with no reverse or circular references.
+`Program.cs` is the single entry point — it registers DI services, configures middleware, and maps all endpoints. Endpoint classes are thin route definitions that accept an injected service interface, bind HTTP parameters, and return response DTOs; they contain no business logic. The service layer encapsulates all Azure Blob SDK interaction behind an interface, translating blob concepts (containers, prefixes, blobs) into domain concepts (projects, runs, logs). Models are plain C# record types used for JSON serialization (response DTOs) or internal data transfer (e.g., `BlobContentResult`) — they carry no behavior. Dependencies flow inward: Endpoints → Services → Models, with no reverse or circular references.
 
 ## Testing conventions
 
