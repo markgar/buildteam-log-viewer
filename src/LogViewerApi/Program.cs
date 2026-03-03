@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(8080);
+    var port = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8080;
+    options.ListenAnyIP(port);
 });
 
 var storageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL")
