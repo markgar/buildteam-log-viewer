@@ -1,11 +1,11 @@
 # Review Themes
 
-Last updated: Cleanup & log content models
+Last updated: Log content retrieval & tail endpoints
 
 1. **Pin dependency versions** — Never use floating/wildcard NuGet versions (`1.13.*`). Pin exact patch versions for reproducible builds. (#5)
 2. **Validate configuration inputs at startup** — When reading environment variables, validate format (e.g., URI well-formedness) in addition to presence, and include the variable name in error messages. (#4)
 3. **Use tooling for generated files** — Don't hand-craft files with strict format requirements (`.sln`, `.csproj`). Use `dotnet new sln` / `dotnet sln add` to avoid format issues like leading blank lines or placeholder GUIDs. (#1, #2)
-4. **Keep docs in sync with code** — When deviating from spec (e.g., changing target framework from net9.0 to net10.0), update all documentation in the same commit: README, BACKLOG, milestone files, and SPEC. (#6, #20, #55)
+4. **Keep docs in sync with code** — When deviating from spec (e.g., changing target framework from net9.0 to net10.0), update all documentation in the same commit: README, BACKLOG, milestone files, and SPEC. (#6, #20, #55, #73)
 5. **Configure serialization conventions in scaffolding** — Establish global JSON serializer settings (naming policy, enum handling) during project setup, not later. Missing config causes silent contract violations that are hard to catch. (#7)
 6. **Prefer overridable defaults over hard-coded values** — Use `UseUrls()` or environment-driven configuration instead of `ConfigureKestrel` with `ListenAnyIP`, so ports and bindings can be overridden at deployment time without code changes. (#3)
 7. **Register each service and endpoint exactly once** — Duplicate DI registrations (especially with conflicting lifetimes) and duplicate route mappings cause silent overrides or runtime exceptions. When wiring up a new component, search for existing registrations before adding a new one. (#17, #18)
@@ -19,3 +19,6 @@ Last updated: Cleanup & log content models
 15. **Test new models alongside existing ones** — When adding a test file for serialization or contract verification, cover the new models introduced in the same milestone, not just retroactive tests for pre-existing models. Deferring new-model tests to a later milestone risks shipping untested contracts. (#41, #59)
 16. **Keep test doubles in sync with interface changes** — When adding methods to a service interface, update all implementing stubs and mocks in the same commit. A missing implementation causes immediate compilation failure that blocks all tests from running. (#45)
 17. **Match error handling breadth across layers** — When the global exception handler catches multiple exception types (e.g., `RequestFailedException or AuthenticationFailedException`), endpoint-level catch blocks for the same external calls must catch the same set of types. Mismatched catches cause inconsistent status codes (e.g., health returning 500 instead of 503 on auth failure). (#58)
+18. **Update DEPLOY.md test count when adding tests** — The test count in DEPLOY.md has gone stale in every milestone that adds tests. Either update the count in the same commit that adds tests, or remove the hardcoded count and describe test categories instead. (#32, #48, #72)
+19. **Write HTTP integration tests for every new endpoint** — Unit and serialization tests alone don't verify routing, parameter binding, middleware behavior, or content negotiation. Every new endpoint should have at least one integration test exercising the happy path through the full HTTP pipeline using `WebApplicationFactory`. (#75)
+20. **Guard against unbounded resource consumption** — Validate and cap all user-controlled parameters (query strings, path segments) that determine download sizes, iteration counts, or memory allocation. A missing bound can let a single request exhaust server memory or CPU. (#66, #74)
