@@ -91,7 +91,7 @@ public class BlobStorageService : IBlobStorageService
     public async Task<BlobContentResult?> GetLogContentAsync(string projectId, string runId, string fileName, long offset, CancellationToken cancellationToken = default)
     {
         if (offset < 0)
-            throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be non-negative.");
+            throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be non-negative");
 
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
         var blobPath = $"{runId}/{fileName}";
@@ -169,8 +169,18 @@ public class BlobStorageService : IBlobStorageService
             {
                 Range = new HttpRange(rangeStart, chunkSize)
             };
-            var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
-            using var reader = new StreamReader(download.Value.Content);
+
+            BlobDownloadStreamingResult download;
+            try
+            {
+                download = (await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken)).Value;
+            }
+            catch (RequestFailedException ex) when (ex.Status == 404)
+            {
+                return null;
+            }
+
+            using var reader = new StreamReader(download.Content);
             content = await reader.ReadToEndAsync(cancellationToken);
 
             var newlineCount = content.Count(c => c == '\n');

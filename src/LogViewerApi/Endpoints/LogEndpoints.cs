@@ -37,7 +37,7 @@ public static class LogEndpoints
             var byteOffset = offset ?? 0;
             if (byteOffset < 0)
             {
-                return Results.BadRequest(new ErrorResponse("Offset must be non-negative."));
+                return Results.BadRequest(new ErrorResponse("Offset must be non-negative"));
             }
             var projectExists = await service.ProjectExistsAsync(projectId, ct);
             if (!projectExists)
