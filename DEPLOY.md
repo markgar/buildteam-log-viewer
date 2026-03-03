@@ -159,12 +159,11 @@ Service layer additions:
 - `GetLogContentAsync(projectId, runId, fileName, offset)` — downloads blob content from offset using range reads
 - `GetLogTailAsync(projectId, runId, fileName, lines)` — reads from end of blob, doubling chunk size until enough lines found
 
-Test count: 74 xUnit tests (up from 51 in milestone 04a).
+Test count: 57 xUnit tests (up from 51 in milestone 04a).
 
 Playwright test fix:
 - The Swagger UI test for `/projects/{projectId}/runs/{runId}/logs` endpoint used `hasText: '/logs'` which now matches 3 elements (logs list, content, tail). Fixed by using `data-path` attribute selector.
 
-<<<<<<< HEAD
 ## Kubernetes Manifests (milestone 05a)
 
 New files added:
@@ -174,7 +173,7 @@ New files added:
 ### Known Bug — OpenAPI Response Schemas (issue #76)
 
 The OpenAPI document at `/openapi/v1.json` documents all six endpoints and query parameters, but response schemas are empty (`"200": {"description": "OK"}`). The ASP.NET Minimal API OpenAPI generator does not emit response schemas unless `.Produces<T>()` is chained on endpoint definitions. Fields like `project_id`, `run_id`, `content`, `offset` are not described in the schema.
-=======
+
 ## Bug Fixes (milestone 05b)
 
 - **Negative offset validation:** `GET /projects/{p}/runs/{r}/logs/{f}?offset=-1` now returns 400 `{"error":"Offset must be non-negative."}` instead of propagating a misleading 500 "Storage account unavailable" error.
@@ -184,7 +183,6 @@ The OpenAPI document at `/openapi/v1.json` documents all six endpoints and query
 - **Tail off-by-one fix:** Trailing empty line from `Split('\n')` on newline-terminated content no longer consumes a requested line slot.
 - **StubBlobStorageService:** Now tracks `LastRequestedOffset` for test assertions.
 - **Test count:** 74 xUnit tests, all passing.
->>>>>>> 19fa341 ([validator] Validate bug fixes milestone: negative offset, lines clamping, TOCTOU race)
 
 ## Known Gotchas
 
