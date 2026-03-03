@@ -71,6 +71,7 @@ app.MapOpenApi();
 app.MapHealthEndpoints();
 app.MapProjectEndpoints();
 app.MapRunEndpoints();
+app.MapLogEndpoints();
 
 app.UseSwaggerUI(options =>
 {

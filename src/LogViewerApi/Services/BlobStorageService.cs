@@ -1,5 +1,6 @@
 using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using LogViewerApi.Models;
 
 namespace LogViewerApi.Services;
@@ -84,6 +85,109 @@ public class BlobStorageService : IBlobStorageService
         {
             return false;
         }
+    }
+
+    public async Task<BlobContentResult?> GetLogContentAsync(string projectId, string runId, string fileName, long offset, CancellationToken cancellationToken = default)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+        var blobPath = $"{runId}/{fileName}";
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        BlobProperties properties;
+        try
+        {
+            properties = (await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken)).Value;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
+        }
+
+        var blobSize = properties.ContentLength;
+        var contentType = properties.ContentType ?? "application/octet-stream";
+        var lastModified = properties.LastModified;
+
+        if (offset >= blobSize)
+        {
+            return new BlobContentResult("", blobSize, blobSize, lastModified, contentType);
+        }
+
+        var downloadOptions = new BlobDownloadOptions
+        {
+            Range = new HttpRange(offset, blobSize - offset)
+        };
+        var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
+        using var reader = new StreamReader(download.Value.Content);
+        var content = await reader.ReadToEndAsync(cancellationToken);
+
+        return new BlobContentResult(content, blobSize, blobSize, lastModified, contentType);
+    }
+
+    public async Task<LogTailResponse?> GetLogTailAsync(string projectId, string runId, string fileName, int lines, CancellationToken cancellationToken = default)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+        var blobPath = $"{runId}/{fileName}";
+        var blobClient = containerClient.GetBlobClient(blobPath);
+
+        BlobProperties properties;
+        try
+        {
+            properties = (await blobClient.GetPropertiesAsync(cancellationToken: cancellationToken)).Value;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
+        }
+
+        var blobSize = properties.ContentLength;
+
+        if (blobSize == 0)
+        {
+            return new LogTailResponse(projectId, runId, fileName, 0, 0, "");
+        }
+
+        var chunkSize = Math.Min(blobSize, 8192);
+        string content;
+
+        while (true)
+        {
+            var rangeStart = blobSize - chunkSize;
+            var downloadOptions = new BlobDownloadOptions
+            {
+                Range = new HttpRange(rangeStart, chunkSize)
+            };
+            var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
+            using var reader = new StreamReader(download.Value.Content);
+            content = await reader.ReadToEndAsync(cancellationToken);
+
+            var newlineCount = content.Count(c => c == '\n');
+            if (newlineCount >= lines + 1 || chunkSize >= blobSize)
+            {
+                break;
+            }
+
+            chunkSize = Math.Min(chunkSize * 2, blobSize);
+        }
+
+        var allLines = content.Split('\n');
+        var tailLines = allLines.TakeLast(lines + 1).ToArray();
+
+        // If the first element is empty (blob started with partial line from chunk boundary), skip it
+        if (tailLines.Length > lines)
+        {
+            tailLines = tailLines.Skip(1).ToArray();
+        }
+
+        // Remove trailing empty line from final newline
+        if (tailLines.Length > 0 && tailLines[^1] == "")
+        {
+            tailLines = tailLines[..^1];
+        }
+
+        var actualLines = tailLines.Length;
+        var joinedContent = string.Join("\n", tailLines);
+
+        return new LogTailResponse(projectId, runId, fileName, blobSize, actualLines, joinedContent);
     }
 
     public async Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId, CancellationToken cancellationToken = default)

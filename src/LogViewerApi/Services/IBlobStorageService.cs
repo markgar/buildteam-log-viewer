@@ -9,4 +9,6 @@ public interface IBlobStorageService
     Task<List<RunInfo>?> ListRunsAsync(string projectId, CancellationToken cancellationToken = default);
     Task<bool> ProjectExistsAsync(string projectId, CancellationToken cancellationToken = default);
     Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId, CancellationToken cancellationToken = default);
+    Task<BlobContentResult?> GetLogContentAsync(string projectId, string runId, string fileName, long offset, CancellationToken cancellationToken = default);
+    Task<LogTailResponse?> GetLogTailAsync(string projectId, string runId, string fileName, int lines, CancellationToken cancellationToken = default);
 }
