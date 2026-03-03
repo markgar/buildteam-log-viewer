@@ -5,15 +5,18 @@ using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(8080);
-});
+builder.WebHost.UseUrls("http://+:8080");
 
 var storageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL")
     ?? throw new InvalidOperationException("STORAGE_ACCOUNT_URL environment variable is required.");
 
-builder.Services.AddSingleton(new BlobServiceClient(new Uri(storageAccountUrl), new DefaultAzureCredential()));
+if (!Uri.TryCreate(storageAccountUrl, UriKind.Absolute, out var storageUri))
+{
+    throw new InvalidOperationException(
+        $"STORAGE_ACCOUNT_URL is not a valid absolute URI: \"{storageAccountUrl}\"");
+}
+
+builder.Services.AddSingleton(new BlobServiceClient(storageUri, new DefaultAzureCredential()));
 
 builder.Services.AddOpenApi();
 
