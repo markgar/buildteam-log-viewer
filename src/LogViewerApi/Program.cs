@@ -13,6 +13,10 @@ var storageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL"
 
 builder.Services.AddSingleton(new BlobServiceClient(new Uri(storageAccountUrl), new DefaultAzureCredential()));
 
+builder.Services.AddOpenApi();
+
 var app = builder.Build();
+
+app.MapOpenApi();
 
 app.Run();
