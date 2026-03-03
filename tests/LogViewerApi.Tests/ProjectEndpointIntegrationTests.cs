@@ -25,11 +25,11 @@ public class ProjectEndpointIntegrationTests : IDisposable
             },
             RunsByProject =
             {
-                ["project-alpha"] = new RunListResponse("project-alpha", new List<RunInfo>
+                ["project-alpha"] = new List<RunInfo>
                 {
                     new("20260115-103000", new DateTimeOffset(2026, 1, 15, 10, 30, 0, TimeSpan.Zero)),
                     new("20260116-120000", new DateTimeOffset(2026, 1, 16, 12, 0, 0, TimeSpan.Zero))
-                })
+                }
             }
         };
 

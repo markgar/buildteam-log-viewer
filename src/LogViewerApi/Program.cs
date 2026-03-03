@@ -55,7 +55,7 @@ app.UseExceptionHandler(errorApp =>
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        if (exception is RequestFailedException)
+        if (exception is RequestFailedException or AuthenticationFailedException)
         {
             var message = $"Storage account unavailable: {exception.Message}";
             await context.Response.WriteAsJsonAsync(new ErrorResponse(message));

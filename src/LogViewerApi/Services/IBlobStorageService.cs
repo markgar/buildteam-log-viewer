@@ -4,8 +4,9 @@ namespace LogViewerApi.Services;
 
 public interface IBlobStorageService
 {
-    Task<List<ProjectInfo>> ListProjectsAsync();
-    Task<RunListResponse?> ListRunsAsync(string projectId);
-    Task<bool> ProjectExistsAsync(string projectId);
-    Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId);
+    Task CheckStorageHealthAsync(CancellationToken cancellationToken = default);
+    Task<List<ProjectInfo>> ListProjectsAsync(CancellationToken cancellationToken = default);
+    Task<List<RunInfo>?> ListRunsAsync(string projectId, CancellationToken cancellationToken = default);
+    Task<bool> ProjectExistsAsync(string projectId, CancellationToken cancellationToken = default);
+    Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId, CancellationToken cancellationToken = default);
 }

@@ -13,12 +13,18 @@ public class BlobStorageService : IBlobStorageService
         _blobServiceClient = blobServiceClient;
     }
 
-    public async Task<List<ProjectInfo>> ListProjectsAsync()
+    public async Task CheckStorageHealthAsync(CancellationToken cancellationToken = default)
+    {
+        await _blobServiceClient.GetAccountInfoAsync(cancellationToken);
+    }
+
+    public async Task<List<ProjectInfo>> ListProjectsAsync(CancellationToken cancellationToken = default)
     {
         var projects = new List<ProjectInfo>();
 
-        await foreach (var container in _blobServiceClient.GetBlobContainersAsync())
+        await foreach (var container in _blobServiceClient.GetBlobContainersAsync(cancellationToken: cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var lastModified = container.Properties.LastModified;
             projects.Add(new ProjectInfo(container.Name, lastModified));
         }
@@ -26,13 +32,13 @@ public class BlobStorageService : IBlobStorageService
         return projects;
     }
 
-    public async Task<RunListResponse?> ListRunsAsync(string projectId)
+    public async Task<List<RunInfo>?> ListRunsAsync(string projectId, CancellationToken cancellationToken = default)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
 
         try
         {
-            await containerClient.GetPropertiesAsync();
+            await containerClient.GetPropertiesAsync(cancellationToken: cancellationToken);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
@@ -41,8 +47,9 @@ public class BlobStorageService : IBlobStorageService
 
         var runGroups = new Dictionary<string, DateTimeOffset>();
 
-        await foreach (var blob in containerClient.GetBlobsAsync())
+        await foreach (var blob in containerClient.GetBlobsAsync(cancellationToken: cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var firstSegment = blob.Name.Split('/')[0];
             var blobLastModified = blob.Properties.LastModified ?? DateTimeOffset.MinValue;
 
@@ -63,16 +70,16 @@ public class BlobStorageService : IBlobStorageService
             .Select(g => new RunInfo(g.Key, g.Value))
             .ToList();
 
-        return new RunListResponse(projectId, runs);
+        return runs;
     }
 
-    public async Task<bool> ProjectExistsAsync(string projectId)
+    public async Task<bool> ProjectExistsAsync(string projectId, CancellationToken cancellationToken = default)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
 
         try
         {
-            await containerClient.GetPropertiesAsync();
+            await containerClient.GetPropertiesAsync(cancellationToken: cancellationToken);
             return true;
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
@@ -81,7 +88,7 @@ public class BlobStorageService : IBlobStorageService
         }
     }
 
-    public async Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId)
+    public async Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId, CancellationToken cancellationToken = default)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
 
@@ -89,8 +96,9 @@ public class BlobStorageService : IBlobStorageService
         var prompts = new List<LogItemInfo>();
         var artifacts = new List<LogItemInfo>();
 
-        await foreach (var blob in containerClient.GetBlobsAsync(prefix: runId + "/"))
+        await foreach (var blob in containerClient.GetBlobsAsync(prefix: runId + "/", cancellationToken: cancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var relativeName = blob.Name[(runId.Length + 1)..];
             var size = blob.Properties.ContentLength ?? 0;
             var lastModified = blob.Properties.LastModified ?? DateTimeOffset.MinValue;
