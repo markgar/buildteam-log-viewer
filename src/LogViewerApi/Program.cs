@@ -69,6 +69,7 @@ app.UseExceptionHandler(errorApp =>
 app.MapOpenApi();
 
 app.MapHealthEndpoints();
+app.MapProjectEndpoints();
 
 app.UseSwaggerUI(options =>
 {
