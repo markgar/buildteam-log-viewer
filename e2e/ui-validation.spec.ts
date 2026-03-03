@@ -107,7 +107,7 @@ test('OpenAPI spec contains /projects/{projectId}/runs/{runId}/logs path', async
 test('Swagger UI shows /projects/{projectId}/runs/{runId}/logs endpoint', async ({ page }) => {
   await page.goto('/swagger/index.html');
   await page.waitForLoadState('networkidle');
-  const logsPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/logs' });
+  const logsPath = page.locator('.swagger-ui .opblock-summary-path[data-path="/projects/{projectId}/runs/{runId}/logs"]');
   await expect(logsPath).toBeVisible();
 });
 
@@ -120,6 +120,62 @@ test('GET /projects/nonexistent/runs/some-run/logs returns 404 or 500 with JSON 
 
 test('GET /projects/some-project/runs/nonexistent-run/logs returns 404 or 500 with JSON error', async ({ request }) => {
   const response = await request.get('/projects/some-project/runs/nonexistent-run/logs');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
+
+// Milestone 04b: Log content and tail endpoints
+
+test('OpenAPI spec contains log content path /projects/{projectId}/runs/{runId}/logs/{fileName}', async ({ request }) => {
+  const response = await request.get('/openapi/v1.json');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.paths).toHaveProperty('/projects/{projectId}/runs/{runId}/logs/{fileName}');
+});
+
+test('OpenAPI spec contains tail path /projects/{projectId}/runs/{runId}/logs/{fileName}/tail', async ({ request }) => {
+  const response = await request.get('/openapi/v1.json');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.paths).toHaveProperty('/projects/{projectId}/runs/{runId}/logs/{fileName}/tail');
+});
+
+test('Swagger UI shows log content endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const contentPath = page.locator('.swagger-ui .opblock-summary-path[data-path="/projects/{projectId}/runs/{runId}/logs/{fileName}"]');
+  await expect(contentPath).toBeVisible();
+});
+
+test('Swagger UI shows tail endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const tailPath = page.locator('.swagger-ui .opblock-summary-path[data-path="/projects/{projectId}/runs/{runId}/logs/{fileName}/tail"]');
+  await expect(tailPath).toBeVisible();
+});
+
+test('GET /projects/nonexistent/runs/some-run/logs/builder-1.log returns 404 or 500 with JSON error', async ({ request }) => {
+  const response = await request.get('/projects/nonexistent/runs/20260302-211501/logs/builder-1.log');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
+
+test('GET log content with raw=true for nonexistent returns 404 or 500', async ({ request }) => {
+  const response = await request.get('/projects/some-project/runs/20260302-211501/logs/nonexistent.log?raw=true');
+  expect([404, 500]).toContain(response.status());
+});
+
+test('GET /projects/nonexistent/runs/some-run/logs/builder-1.log/tail returns 404 or 500', async ({ request }) => {
+  const response = await request.get('/projects/nonexistent/runs/20260302-211501/logs/builder-1.log/tail');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
+
+test('GET tail with lines param for nonexistent returns 404 or 500', async ({ request }) => {
+  const response = await request.get('/projects/some-project/runs/20260302-211501/logs/builder-1.log/tail?lines=50');
   expect([404, 500]).toContain(response.status());
   const body = await response.json();
   expect(body.error).toBeDefined();

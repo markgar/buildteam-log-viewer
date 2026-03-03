@@ -53,6 +53,8 @@
 - `GET /projects` → 500 `{"error":"An unexpected error occurred"}` when storage unreachable (fake URL). **Bug:** Should return `{"error":"Storage account unavailable: ..."}` — see issue #35.
 - `GET /projects/nonexistent-project-xyz/runs` → 500 when storage unreachable (expected behavior)
 - `GET /projects/{projectId}/runs/{runId}/logs` → 500 when storage unreachable; 404 with `{"error":"Project not found"}` or `{"error":"Run not found"}` when storage reachable but resource missing
+- `GET /projects/{projectId}/runs/{runId}/logs/{**fileName}` → 500 when storage unreachable; 404 with `{"error":"Project not found"}` or `{"error":"Log not found"}` when storage reachable but resource missing. Accepts `raw` and `offset` query params.
+- `GET /projects/{projectId}/runs/{runId}/logs/{fileName}/tail` → 500 when storage unreachable; 404 with `{"error":"Project not found"}` or `{"error":"Log not found"}` when storage reachable but resource missing. Accepts `lines` query param.
 
 ## PORT Validation
 
@@ -97,7 +99,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 51 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, exception handler integration). All pass as of milestone 04a.
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 57 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, log content endpoint, tail endpoint, exception handler integration). All pass as of milestone 04b.
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
@@ -144,6 +146,23 @@ New model records added for upcoming log content and tail endpoints:
 ## Known Bug — Health Endpoint (issue #54)
 
 The health endpoint catches `RequestFailedException` but not `AuthenticationFailedException` / `CredentialUnavailableException`. When `DefaultAzureCredential` can't get a token, the exception falls through to the global handler returning 500 instead of the health endpoint's intended 503 with `{"error":"Storage account unreachable"}`. This affects all environments without real Azure credentials.
+
+## Log Content & Tail Endpoints (milestone 04b)
+
+New endpoints added:
+- `GET /projects/{projectId}/runs/{runId}/logs/{**fileName}` — retrieves log file content. Accepts `raw` (bool, default false) and `offset` (long, default 0) query params. Returns `LogContentResponse` JSON envelope (200), 404 with `{"error":"Project not found"}` or `{"error":"Log not found"}`, or 500 if storage unreachable. When `raw=true`, returns raw text content with Content-Range header for offset reads.
+- `GET /projects/{projectId}/runs/{runId}/logs/{fileName}/tail` — returns last N lines. Accepts `lines` (int, default 100) query param. Returns `LogTailResponse` (200), 404 with `{"error":"Project not found"}` or `{"error":"Log not found"}`, or 500 if storage unreachable.
+
+Note: The tail endpoint uses `{fileName}` (not catch-all) so it matches simple filenames before the catch-all content route.
+
+Service layer additions:
+- `GetLogContentAsync(projectId, runId, fileName, offset)` — downloads blob content from offset using range reads
+- `GetLogTailAsync(projectId, runId, fileName, lines)` — reads from end of blob, doubling chunk size until enough lines found
+
+Test count: 57 xUnit tests (up from 51 in milestone 04a).
+
+Playwright test fix:
+- The Swagger UI test for `/projects/{projectId}/runs/{runId}/logs` endpoint used `hasText: '/logs'` which now matches 3 elements (logs list, content, tail). Fixed by using `data-path` attribute selector.
 
 ## Known Gotchas
 
