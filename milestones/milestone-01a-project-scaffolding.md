@@ -16,4 +16,4 @@
 - [x] Add OpenAPI configuration in `Program.cs` — call `builder.Services.AddOpenApi()` and `app.MapOpenApi()` to serve the OpenAPI doc at `/openapi/v1.json`
 - [x] Add Swagger UI middleware in `Program.cs` — call `app.UseSwaggerUI(options => { options.SwaggerEndpoint("/openapi/v1.json", "Log Viewer API"); })` to serve Swagger UI at `/swagger`
 - [x] Add global exception handler in `Program.cs` — register `app.UseExceptionHandler` that catches all exceptions, checks for `RequestFailedException` (from `Azure.Storage.Blobs`), and returns `{"error":"Storage account unavailable: <detail>"}` for Azure errors or `{"error":"An unexpected error occurred"}` for others, with appropriate status codes (500)
-- [ ] Create the directory structure: `src/LogViewerApi/Services/`, `src/LogViewerApi/Models/`, `src/LogViewerApi/Endpoints/`
+- [x] Create the directory structure: `src/LogViewerApi/Services/`, `src/LogViewerApi/Models/`, `src/LogViewerApi/Endpoints/`
