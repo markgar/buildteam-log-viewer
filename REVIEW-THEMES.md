@@ -1,6 +1,6 @@
 # Review Themes
 
-Last updated: Cleanup & response models
+Last updated: Service layer & project endpoints
 
 1. **Pin dependency versions** — Never use floating/wildcard NuGet versions (`1.13.*`). Pin exact patch versions for reproducible builds. (#5)
 2. **Validate configuration inputs at startup** — When reading environment variables, validate format (e.g., URI well-formedness) in addition to presence, and include the variable name in error messages. (#4)
@@ -12,3 +12,7 @@ Last updated: Cleanup & response models
 8. **Update Dockerfile when solution structure changes** — Adding projects to the solution requires updating Dockerfile COPY commands (or switching to project-specific restore) so the Docker build does not break on `dotnet restore`. (#19)
 9. **Isolate tests from shared process state** — Tests that mutate process-wide state (environment variables, static fields) must use `[Collection]` to run sequentially or save/restore in try/finally to prevent cross-class race conditions in parallel xUnit execution. (#21, #33)
 10. **Apply pattern fixes to all new code** — When a finding identifies a recurring pattern (e.g., missing `[Collection]` on env-var-mutating tests), apply the fix to all existing instances AND ensure all new code written in the same milestone follows the corrected pattern. (#25 → #33)
+11. **Propagate CancellationToken through async service methods** — Every async method that calls external services (Azure SDK, HTTP clients, databases) should accept and forward a `CancellationToken`. Without it, client disconnections leave the server doing wasted work, and under load this becomes a resource exhaustion vector. (#38)
+12. **Health endpoints must check all dependencies** — A `/health` endpoint that returns 200 without verifying external dependencies (storage, databases, caches) is worse than no health endpoint — it prevents the orchestrator from detecting and recovering from outages. Add a lightweight connectivity check for each dependency. (#36)
+13. **Keep endpoint fluent chains consistent** — When endpoint files use a fluent pattern (e.g., `.WithName().WithOpenApi()`), apply the same chain to every endpoint. Removing a method from one endpoint while adding it to new ones creates an inconsistency that compounds as the codebase grows. (#14, #37)
+14. **Service layer returns domain data, not response DTOs** — Service methods should return raw domain objects (e.g., `List<RunInfo>`), not HTTP response DTOs (e.g., `RunListResponse`). Constructing response envelopes is the endpoint layer's job. Mixing this up blurs the architecture boundary and creates inconsistent patterns across service methods. (#39)
