@@ -46,21 +46,44 @@
 ## Verified Endpoints
 
 - `GET /health` → 200 `{"status":"ok"}`
-- `GET /openapi/v1.json` → 200 (valid OpenAPI 3.1.1 JSON document, paths include `/health`)
+- `GET /openapi/v1.json` → 200 (valid OpenAPI 3.1.1 JSON document, content-type `application/json;charset=utf-8`, paths include `/health`)
 - `GET /swagger/index.html` → 200 (Swagger UI HTML page)
+
+## PORT Validation
+
+- Setting `PORT` to a non-integer (e.g. `notanumber`) causes startup failure with `InvalidOperationException: PORT environment variable must be an integer between 1 and 65535, got: 'notanumber'`
+- Setting `PORT` to an out-of-range value (e.g. `99999`) causes the same failure
+- When `PORT` is unset, app defaults to 8080
+
+## Response DTOs (milestone 02a)
+
+New model records added (no endpoints yet — these are data contracts for future milestones):
+- `Models/ProjectInfo.cs` — `record ProjectInfo(string Id, DateTimeOffset LastModified)`
+- `Models/ProjectListResponse.cs` — `record ProjectListResponse(IReadOnlyList<ProjectInfo> Projects)`
+- `Models/RunInfo.cs` — `record RunInfo(string Id, DateTimeOffset LastModified)`
+- `Models/RunListResponse.cs` — `record RunListResponse(string ProjectId, IReadOnlyList<RunInfo> Runs)`
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 7 xUnit tests (health endpoint, OpenAPI, startup config)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs xUnit tests (health endpoint, OpenAPI, startup config, error response serialization)
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
   docker run --rm --network buildteam-log-viewer_default -e BASE_URL=http://buildteam-log-viewer-app-1:8080 pw-tests npx playwright test --reporter=list
+  ```
+  The Dockerfile.pw is:
+  ```dockerfile
+  FROM mcr.microsoft.com/playwright:v1.52.0-noble
+  WORKDIR /app/e2e
+  COPY e2e/package.json ./
+  RUN npm install
+  COPY e2e/ ./
   ```
 
 ## Known Gotchas
 
 - **Kestrel address conflict warning:** The app configures Kestrel to listen on port 8080 via `ConfigureKestrel` AND sets `ASPNETCORE_URLS`. This produces a warning: "Overriding address(es) 'http://+:8080'. Binding to endpoints defined via IConfiguration and/or UseKestrel() instead." It's harmless — the app still listens on 8080.
 - **Playwright volume mounts:** Bind mounts don't work in this Docker-in-Docker environment. Bake e2e test files into a custom Docker image instead. Pin `@playwright/test` to `1.52.0` (exact) to match the Docker image `v1.52.0-noble`.
+- **HEAD requests not supported on /openapi/v1.json:** `curl -I` returns 405 Method Not Allowed. Use `curl -sv` to inspect response headers from a GET request.
 - **Duplicate endpoint/DI registrations (fixed in 01b):** The original code had `/health` mapped twice (in `HealthEndpoints.cs` and `Program.cs`) and `IBlobStorageService` registered twice (singleton and scoped). Both duplicates were removed — the endpoint lives in `HealthEndpoints.cs` and the service is registered as scoped.
 - **Test project csproj must be in Dockerfile:** The solution file references `tests/LogViewerApi.Tests/LogViewerApi.Tests.csproj`. The Dockerfile must `COPY` this csproj before `dotnet restore` or the restore step fails.
