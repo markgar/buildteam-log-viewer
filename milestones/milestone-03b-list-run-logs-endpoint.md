@@ -24,5 +24,5 @@
 
 ### Endpoint
 
-- [ ] Create `Endpoints/RunEndpoints.cs` with static class and `MapRunEndpoints(this WebApplication app)` extension method containing `GET /projects/{projectId}/runs/{runId}/logs` — inject `IBlobStorageService`, first call `ProjectExistsAsync(projectId)` and if `false` return `Results.NotFound(new ErrorResponse("Project not found"))`, then call `ListRunLogsAsync(projectId, runId)` and if result is `null` return `Results.NotFound(new ErrorResponse("Run not found"))`, otherwise return `Results.Ok(result)`, chain `.WithName("ListRunLogs").WithOpenApi()`
+- [x] Create `Endpoints/RunEndpoints.cs` with static class and `MapRunEndpoints(this WebApplication app)` extension method containing `GET /projects/{projectId}/runs/{runId}/logs` — inject `IBlobStorageService`, first call `ProjectExistsAsync(projectId)` and if `false` return `Results.NotFound(new ErrorResponse("Project not found"))`, then call `ListRunLogsAsync(projectId, runId)` and if result is `null` return `Results.NotFound(new ErrorResponse("Run not found"))`, otherwise return `Results.Ok(result)`, chain `.WithName("ListRunLogs").WithOpenApi()`
 - [ ] Register run endpoints in `Program.cs` — add `app.MapRunEndpoints()` call after `app.MapProjectEndpoints()`

@@ -1,0 +1,31 @@
+using LogViewerApi.Models;
+using LogViewerApi.Services;
+
+namespace LogViewerApi.Endpoints;
+
+public static class RunEndpoints
+{
+    public static WebApplication MapRunEndpoints(this WebApplication app)
+    {
+        app.MapGet("/projects/{projectId}/runs/{runId}/logs", async (string projectId, string runId, IBlobStorageService service) =>
+        {
+            var projectExists = await service.ProjectExistsAsync(projectId);
+            if (!projectExists)
+            {
+                return Results.NotFound(new ErrorResponse("Project not found"));
+            }
+
+            var result = await service.ListRunLogsAsync(projectId, runId);
+            if (result is null)
+            {
+                return Results.NotFound(new ErrorResponse("Run not found"));
+            }
+
+            return Results.Ok(result);
+        })
+            .WithName("ListRunLogs")
+            .WithOpenApi();
+
+        return app;
+    }
+}
