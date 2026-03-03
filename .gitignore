@@ -24,3 +24,4 @@ appsettings.Development.json
 # Core dumps
 core.*
 validation-results.txt
+validation-results.txt

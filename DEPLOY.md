@@ -65,6 +65,18 @@ New model records added (no endpoints yet — these are data contracts for futur
 - `Models/RunInfo.cs` — `record RunInfo(string Id, DateTimeOffset LastModified)`
 - `Models/RunListResponse.cs` — `record RunListResponse(string ProjectId, IReadOnlyList<RunInfo> Runs)`
 
+## Log Response DTOs (milestone 03a)
+
+New model records added for upcoming log list endpoint:
+- `Models/LogItemInfo.cs` — `record LogItemInfo(string Name, long Size, DateTimeOffset LastModified)`
+- `Models/LogListResponse.cs` — `record LogListResponse(string ProjectId, string RunId, IReadOnlyList<LogItemInfo> Logs, IReadOnlyList<LogItemInfo> Prompts, IReadOnlyList<LogItemInfo> Artifacts)`
+
+## Test Cleanup (milestone 03a)
+
+- Added `using` keyword to `JsonDocument.Parse()` calls in test files to prevent memory leaks
+- Added `[Collection("EnvironmentTests")]` to `HealthEndpointIntegrationTests` and `ServiceRegistrationTests` to prevent parallel execution conflicts when mutating `STORAGE_ACCOUNT_URL`
+- `ServiceRegistrationTests` now saves/restores `STORAGE_ACCOUNT_URL` in try/finally blocks
+
 ## Project Endpoints (milestone 02b)
 
 New endpoints added:
@@ -82,7 +94,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 14 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 20 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization)
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
