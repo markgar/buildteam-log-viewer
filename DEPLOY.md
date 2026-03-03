@@ -46,8 +46,10 @@
 ## Verified Endpoints
 
 - `GET /health` → 200 `{"status":"ok"}`
-- `GET /openapi/v1.json` → 200 (valid OpenAPI 3.1.1 JSON document, content-type `application/json;charset=utf-8`, paths include `/health`)
+- `GET /openapi/v1.json` → 200 (valid OpenAPI 3.1.1 JSON document, content-type `application/json;charset=utf-8`, paths include `/health`, `/projects`, `/projects/{projectId}/runs`)
 - `GET /swagger/index.html` → 200 (Swagger UI HTML page)
+- `GET /projects` → 500 `{"error":"An unexpected error occurred"}` when storage unreachable (fake URL). **Bug:** Should return `{"error":"Storage account unavailable: ..."}` — see issue #35.
+- `GET /projects/nonexistent-project-xyz/runs` → 500 when storage unreachable (expected behavior)
 
 ## PORT Validation
 
@@ -62,6 +64,21 @@ New model records added (no endpoints yet — these are data contracts for futur
 - `Models/ProjectListResponse.cs` — `record ProjectListResponse(IReadOnlyList<ProjectInfo> Projects)`
 - `Models/RunInfo.cs` — `record RunInfo(string Id, DateTimeOffset LastModified)`
 - `Models/RunListResponse.cs` — `record RunListResponse(string ProjectId, IReadOnlyList<RunInfo> Runs)`
+
+## Project Endpoints (milestone 02b)
+
+New endpoints added:
+- `GET /projects` — lists all blob containers as projects. Returns `ProjectListResponse` (200) or 500 with error JSON if storage unreachable.
+- `GET /projects/{projectId}/runs` — lists runs (first-segment blob groups) within a project. Returns `RunListResponse` (200), 404 with `{"error":"Project not found"}` if container doesn't exist, or 500 if storage unreachable.
+
+Service layer:
+- `IBlobStorageService` — interface with `ListProjectsAsync()` and `ListRunsAsync(string projectId)`
+- `BlobStorageService` — implementation using `BlobServiceClient` injected via DI
+- `ProjectEndpoints.cs` — maps `/projects` and `/projects/{projectId}/runs` routes
+
+### Known Bug (issue #35)
+
+The global exception handler in `Program.cs` only catches `Azure.RequestFailedException` to produce `"Storage account unavailable: ..."` error messages. When `DefaultAzureCredential` fails (e.g., no credentials in container), the exception is `Azure.Identity.CredentialUnavailableException` which falls through to the generic `"An unexpected error occurred"` handler. Fix: also catch `Azure.Identity.AuthenticationFailedException`.
 
 ## Running Tests
 

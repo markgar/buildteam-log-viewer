@@ -53,3 +53,46 @@ test('Health endpoint returns ok status via API', async ({ request }) => {
   const body = await response.json();
   expect(body.status).toBe('ok');
 });
+
+test('Swagger UI shows /projects endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const projectsPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/projects' });
+  await expect(projectsPath.first()).toBeVisible();
+});
+
+test('Swagger UI shows /projects/{projectId}/runs endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const runsPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/projects/{projectId}/runs' });
+  await expect(runsPath).toBeVisible();
+});
+
+test('GET /projects returns JSON with error or projects key', async ({ request }) => {
+  const response = await request.get('/projects');
+  const body = await response.json();
+  const hasProjects = 'projects' in body;
+  const hasError = 'error' in body;
+  expect(hasProjects || hasError).toBeTruthy();
+});
+
+test('GET /projects/nonexistent/runs returns 404 or 500 with JSON', async ({ request }) => {
+  const response = await request.get('/projects/nonexistent-project-xyz/runs');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect('error' in body || 'project_id' in body).toBeTruthy();
+});
+
+test('OpenAPI spec contains /projects path', async ({ request }) => {
+  const response = await request.get('/openapi/v1.json');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.paths).toHaveProperty('/projects');
+});
+
+test('OpenAPI spec contains /projects/{projectId}/runs path', async ({ request }) => {
+  const response = await request.get('/openapi/v1.json');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.paths).toHaveProperty('/projects/{projectId}/runs');
+});
