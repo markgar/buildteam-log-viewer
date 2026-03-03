@@ -13,6 +13,7 @@ public class ExceptionHandlerIntegrationTests : IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
+    private readonly string? _savedStorageAccountUrl;
 
     public ExceptionHandlerIntegrationTests()
     {
@@ -21,6 +22,7 @@ public class ExceptionHandlerIntegrationTests : IDisposable
             ExceptionToThrow = new RequestFailedException(503, "service unavailable")
         };
 
+        _savedStorageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
         Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -39,6 +41,7 @@ public class ExceptionHandlerIntegrationTests : IDisposable
     {
         _client.Dispose();
         _factory.Dispose();
+        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", _savedStorageAccountUrl);
     }
 
     [Fact]

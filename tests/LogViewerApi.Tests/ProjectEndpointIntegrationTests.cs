@@ -13,6 +13,7 @@ public class ProjectEndpointIntegrationTests : IDisposable
 {
     private readonly WebApplicationFactory<Program> _factory;
     private readonly HttpClient _client;
+    private readonly string? _savedStorageAccountUrl;
 
     public ProjectEndpointIntegrationTests()
     {
@@ -33,6 +34,7 @@ public class ProjectEndpointIntegrationTests : IDisposable
             }
         };
 
+        _savedStorageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
         Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
         _factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
@@ -51,6 +53,7 @@ public class ProjectEndpointIntegrationTests : IDisposable
     {
         _client.Dispose();
         _factory.Dispose();
+        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", _savedStorageAccountUrl);
     }
 
     [Fact]

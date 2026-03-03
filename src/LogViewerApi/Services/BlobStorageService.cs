@@ -36,14 +36,8 @@ public class BlobStorageService : IBlobStorageService
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
 
-        try
-        {
-            await containerClient.GetPropertiesAsync(cancellationToken: cancellationToken);
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
+        if (!await ContainerExistsAsync(containerClient, cancellationToken))
             return null;
-        }
 
         var runGroups = new Dictionary<string, DateTimeOffset>();
 
@@ -76,7 +70,11 @@ public class BlobStorageService : IBlobStorageService
     public async Task<bool> ProjectExistsAsync(string projectId, CancellationToken cancellationToken = default)
     {
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+        return await ContainerExistsAsync(containerClient, cancellationToken);
+    }
 
+    private static async Task<bool> ContainerExistsAsync(BlobContainerClient containerClient, CancellationToken cancellationToken = default)
+    {
         try
         {
             await containerClient.GetPropertiesAsync(cancellationToken: cancellationToken);
