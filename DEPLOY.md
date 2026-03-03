@@ -164,6 +164,7 @@ Test count: 74 xUnit tests (up from 51 in milestone 04a).
 Playwright test fix:
 - The Swagger UI test for `/projects/{projectId}/runs/{runId}/logs` endpoint used `hasText: '/logs'` which now matches 3 elements (logs list, content, tail). Fixed by using `data-path` attribute selector.
 
+<<<<<<< HEAD
 ## Kubernetes Manifests (milestone 05a)
 
 New files added:
@@ -173,6 +174,17 @@ New files added:
 ### Known Bug — OpenAPI Response Schemas (issue #76)
 
 The OpenAPI document at `/openapi/v1.json` documents all six endpoints and query parameters, but response schemas are empty (`"200": {"description": "OK"}`). The ASP.NET Minimal API OpenAPI generator does not emit response schemas unless `.Produces<T>()` is chained on endpoint definitions. Fields like `project_id`, `run_id`, `content`, `offset` are not described in the schema.
+=======
+## Bug Fixes (milestone 05b)
+
+- **Negative offset validation:** `GET /projects/{p}/runs/{r}/logs/{f}?offset=-1` now returns 400 `{"error":"Offset must be non-negative."}` instead of propagating a misleading 500 "Storage account unavailable" error.
+- **Tail lines clamping:** `GET /projects/{p}/runs/{r}/logs/{f}/tail?lines=0` and `lines=-5` now clamp to `Math.Clamp(lines, 1, 10000)` preventing integer overflow and excessive memory use.
+- **TOCTOU race fix:** `GetLogContentAsync` now catches `RequestFailedException` with status 404 around `DownloadStreamingAsync` to handle blob deletion between property check and download.
+- **Content-Range fix:** Invalid `bytes 500-499/500` headers no longer emitted when offset >= blob size.
+- **Tail off-by-one fix:** Trailing empty line from `Split('\n')` on newline-terminated content no longer consumes a requested line slot.
+- **StubBlobStorageService:** Now tracks `LastRequestedOffset` for test assertions.
+- **Test count:** 74 xUnit tests, all passing.
+>>>>>>> 19fa341 ([validator] Validate bug fixes milestone: negative offset, lines clamping, TOCTOU race)
 
 ## Known Gotchas
 

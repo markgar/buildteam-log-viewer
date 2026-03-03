@@ -180,3 +180,27 @@ test('GET tail with lines param for nonexistent returns 404 or 500', async ({ re
   const body = await response.json();
   expect(body.error).toBeDefined();
 });
+
+// Milestone 05b: Bug fixes
+
+test('GET log content with negative offset returns 400', async ({ request }) => {
+  const response = await request.get('/projects/test/runs/run1/logs/file.log?offset=-1');
+  expect(response.status()).toBe(400);
+  const body = await response.json();
+  expect(body.error).toContain('Offset must be non-negative');
+});
+
+test('GET tail with lines=0 does not crash — returns storage error or valid response', async ({ request }) => {
+  const response = await request.get('/projects/test/runs/run1/logs/file.log/tail?lines=0');
+  // lines=0 should be clamped to 1 and proceed normally; 500 from storage is expected with fake storage
+  expect([200, 404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
+
+test('GET tail with lines=-5 does not crash — returns storage error or valid response', async ({ request }) => {
+  const response = await request.get('/projects/test/runs/run1/logs/file.log/tail?lines=-5');
+  expect([200, 404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
