@@ -19,4 +19,9 @@ var app = builder.Build();
 
 app.MapOpenApi();
 
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "Log Viewer API");
+});
+
 app.Run();
