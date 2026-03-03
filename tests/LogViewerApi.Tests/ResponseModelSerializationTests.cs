@@ -206,4 +206,99 @@ public class ResponseModelSerializationTests
         Assert.True(doc.RootElement.TryGetProperty("artifacts", out var artifactsProp));
         Assert.Equal(0, artifactsProp.GetArrayLength());
     }
+
+    [Fact]
+    public void LogContentResponse_SerializesToSnakeCaseWithAllFields()
+    {
+        var timestamp = new DateTimeOffset(2026, 3, 1, 14, 30, 0, TimeSpan.Zero);
+        var response = new LogContentResponse(
+            "my-project", "20260301-143000", "build.log", 2048, 512, timestamp, "log line content");
+
+        var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("project_id", out var projectId));
+        Assert.Equal("my-project", projectId.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("run_id", out var runId));
+        Assert.Equal("20260301-143000", runId.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("name", out var name));
+        Assert.Equal("build.log", name.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("size", out var size));
+        Assert.Equal(2048, size.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("offset", out var offset));
+        Assert.Equal(512, offset.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("last_modified", out var lastMod));
+        Assert.Contains("2026-03-01", lastMod.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("content", out var content));
+        Assert.Equal("log line content", content.GetString());
+
+        Assert.False(doc.RootElement.TryGetProperty("ProjectId", out _));
+        Assert.False(doc.RootElement.TryGetProperty("RunId", out _));
+        Assert.False(doc.RootElement.TryGetProperty("LastModified", out _));
+    }
+
+    [Fact]
+    public void LogTailResponse_SerializesToSnakeCaseWithAllFields()
+    {
+        var response = new LogTailResponse(
+            "my-project", "20260301-143000", "deploy.log", 8192, 25, "last 25 lines here");
+
+        var json = JsonSerializer.Serialize(response, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("project_id", out var projectId));
+        Assert.Equal("my-project", projectId.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("run_id", out var runId));
+        Assert.Equal("20260301-143000", runId.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("name", out var name));
+        Assert.Equal("deploy.log", name.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("total_size", out var totalSize));
+        Assert.Equal(8192, totalSize.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("lines_returned", out var linesReturned));
+        Assert.Equal(25, linesReturned.GetInt32());
+
+        Assert.True(doc.RootElement.TryGetProperty("content", out var content));
+        Assert.Equal("last 25 lines here", content.GetString());
+
+        Assert.False(doc.RootElement.TryGetProperty("TotalSize", out _));
+        Assert.False(doc.RootElement.TryGetProperty("LinesReturned", out _));
+    }
+
+    [Fact]
+    public void BlobContentResult_SerializesToSnakeCaseWithAllFields()
+    {
+        var timestamp = new DateTimeOffset(2026, 3, 1, 16, 0, 0, TimeSpan.Zero);
+        var result = new BlobContentResult("file content here", 4096, 1024, timestamp, "text/plain");
+
+        var json = JsonSerializer.Serialize(result, SnakeCaseOptions);
+        using var doc = JsonDocument.Parse(json);
+
+        Assert.True(doc.RootElement.TryGetProperty("content", out var content));
+        Assert.Equal("file content here", content.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("size", out var size));
+        Assert.Equal(4096, size.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("offset", out var offset));
+        Assert.Equal(1024, offset.GetInt64());
+
+        Assert.True(doc.RootElement.TryGetProperty("last_modified", out var lastMod));
+        Assert.Contains("2026-03-01", lastMod.GetString());
+
+        Assert.True(doc.RootElement.TryGetProperty("content_type", out var contentType));
+        Assert.Equal("text/plain", contentType.GetString());
+
+        Assert.False(doc.RootElement.TryGetProperty("ContentType", out _));
+        Assert.False(doc.RootElement.TryGetProperty("LastModified", out _));
+    }
 }
