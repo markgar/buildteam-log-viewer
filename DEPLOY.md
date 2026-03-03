@@ -164,6 +164,16 @@ Test count: 74 xUnit tests (up from 51 in milestone 04a).
 Playwright test fix:
 - The Swagger UI test for `/projects/{projectId}/runs/{runId}/logs` endpoint used `hasText: '/logs'` which now matches 3 elements (logs list, content, tail). Fixed by using `data-path` attribute selector.
 
+## Kubernetes Manifests (milestone 05a)
+
+New files added:
+- `k8s/deployment.yaml` — Kubernetes Deployment with `metadata.name: log-viewer-api`, workload identity label `azure.workload.identity/use: "true"`, `serviceAccountName: buildteam-sa`, container port 8080, `STORAGE_ACCOUNT_URL` env var (empty placeholder), liveness probe on `/health` (initialDelay 5s, period 10s), readiness probe on `/health` (initialDelay 3s, period 5s)
+- `k8s/service.yaml` — Kubernetes ClusterIP Service exposing port 80 targeting container port 8080, selector `app: log-viewer-api`
+
+### Known Bug — OpenAPI Response Schemas (issue #76)
+
+The OpenAPI document at `/openapi/v1.json` documents all six endpoints and query parameters, but response schemas are empty (`"200": {"description": "OK"}`). The ASP.NET Minimal API OpenAPI generator does not emit response schemas unless `.Produces<T>()` is chained on endpoint definitions. Fields like `project_id`, `run_id`, `content`, `offset` are not described in the schema.
+
 ## Known Gotchas
 
 - **Kestrel address conflict warning:** The app configures Kestrel to listen on port 8080 via `ConfigureKestrel` AND sets `ASPNETCORE_URLS`. This produces a warning: "Overriding address(es) 'http://+:8080'. Binding to endpoints defined via IConfiguration and/or UseKestrel() instead." It's harmless — the app still listens on 8080.
