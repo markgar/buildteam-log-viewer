@@ -65,7 +65,7 @@ New model records added (no endpoints yet — these are data contracts for futur
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs xUnit tests (health endpoint, OpenAPI, startup config, error response serialization)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 14 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization)
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
