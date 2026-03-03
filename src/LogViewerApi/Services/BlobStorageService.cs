@@ -65,4 +65,56 @@ public class BlobStorageService : IBlobStorageService
 
         return new RunListResponse(projectId, runs);
     }
+
+    public async Task<bool> ProjectExistsAsync(string projectId)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+
+        try
+        {
+            await containerClient.GetPropertiesAsync();
+            return true;
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return false;
+        }
+    }
+
+    public async Task<LogListResponse?> ListRunLogsAsync(string projectId, string runId)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
+
+        var logs = new List<LogItemInfo>();
+        var prompts = new List<LogItemInfo>();
+        var artifacts = new List<LogItemInfo>();
+
+        await foreach (var blob in containerClient.GetBlobsAsync(prefix: runId + "/"))
+        {
+            var relativeName = blob.Name[(runId.Length + 1)..];
+            var size = blob.Properties.ContentLength ?? 0;
+            var lastModified = blob.Properties.LastModified ?? DateTimeOffset.MinValue;
+
+            if (relativeName.StartsWith("prompts/"))
+            {
+                var displayName = relativeName["prompts/".Length..];
+                prompts.Add(new LogItemInfo(displayName, size, lastModified));
+            }
+            else if (relativeName.EndsWith(".log"))
+            {
+                logs.Add(new LogItemInfo(relativeName, size, lastModified));
+            }
+            else
+            {
+                artifacts.Add(new LogItemInfo(relativeName, size, lastModified));
+            }
+        }
+
+        if (logs.Count == 0 && prompts.Count == 0 && artifacts.Count == 0)
+        {
+            return null;
+        }
+
+        return new LogListResponse(projectId, runId, logs, prompts, artifacts);
+    }
 }

@@ -70,6 +70,7 @@ app.MapOpenApi();
 
 app.MapHealthEndpoints();
 app.MapProjectEndpoints();
+app.MapRunEndpoints();
 
 app.UseSwaggerUI(options =>
 {
