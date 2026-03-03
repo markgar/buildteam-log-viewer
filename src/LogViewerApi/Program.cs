@@ -1,6 +1,7 @@
 using Azure;
 using Azure.Identity;
 using Azure.Storage.Blobs;
+using LogViewerApi.Services;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,8 @@ var storageAccountUrl = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL"
 builder.Services.AddSingleton(new BlobServiceClient(new Uri(storageAccountUrl), new DefaultAzureCredential()));
 
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IBlobStorageService, BlobStorageService>();
 
 var app = builder.Build();
 
