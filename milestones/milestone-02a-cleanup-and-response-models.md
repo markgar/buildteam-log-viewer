@@ -20,7 +20,7 @@
 - [x] Remove duplicate registrations from `Program.cs` — delete the inline `app.MapGet("/health", ...)` block (lines 70-72, already mapped by `app.MapHealthEndpoints()`) and delete the duplicate `builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>()` (line 28, keeping only the `AddScoped` registration on line 37)
 - [x] Add `.WithOpenApi()` to the health endpoint fluent chain in `Endpoints/HealthEndpoints.cs` so the `MapGet` call ends with `.WithName("Health").WithOpenApi()` (fixes #14)
 - [x] Validate PORT environment variable in `Program.cs` — when `PORT` is set but not a valid integer between 1 and 65535, throw `InvalidOperationException` with message `"PORT environment variable must be an integer between 1 and 65535, got: '{value}'"` instead of silently falling back to 8080 (fixes #16)
-- [ ] Nest `LogViewerApi` project under the `src` solution folder in `LogViewerApi.sln` — add `{9456D2AB-019D-449A-BA24-38F6E68EF9EB} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}` to the `NestedProjects` section (fixes #13)
+- [x] Nest `LogViewerApi` project under the `src` solution folder in `LogViewerApi.sln` — add `{9456D2AB-019D-449A-BA24-38F6E68EF9EB} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}` to the `NestedProjects` section (fixes #13)
 
 ### Response DTOs
 
