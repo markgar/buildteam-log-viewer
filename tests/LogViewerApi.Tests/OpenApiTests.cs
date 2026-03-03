@@ -4,6 +4,7 @@ using Xunit;
 
 namespace LogViewerApi.Tests;
 
+[Collection("EnvironmentTests")]
 public class OpenApiTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;

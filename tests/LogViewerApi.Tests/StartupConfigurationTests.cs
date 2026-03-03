@@ -5,17 +5,26 @@ using Xunit;
 
 namespace LogViewerApi.Tests;
 
+[Collection("EnvironmentTests")]
 public class StartupConfigurationTests
 {
     [Fact]
     public void BlobServiceClient_IsRegisteredInDI()
     {
-        Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
+        var saved = Environment.GetEnvironmentVariable("STORAGE_ACCOUNT_URL");
+        try
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", "https://fake.blob.core.windows.net");
 
-        using var factory = new WebApplicationFactory<Program>();
-        var blobClient = factory.Services.GetService<BlobServiceClient>();
+            using var factory = new WebApplicationFactory<Program>();
+            var blobClient = factory.Services.GetService<BlobServiceClient>();
 
-        Assert.NotNull(blobClient);
+            Assert.NotNull(blobClient);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", saved);
+        }
     }
 
     [Fact]
