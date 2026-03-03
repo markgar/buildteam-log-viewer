@@ -9,7 +9,7 @@
 
 ## Tasks
 
-- [ ] Create the solution file (`LogViewerApi.sln`) and the API project (`src/LogViewerApi/LogViewerApi.csproj`) targeting `net9.0` with `<Nullable>enable</Nullable>` and `<ImplicitUsings>enable</ImplicitUsings>`
+- [x] Create the solution file (`LogViewerApi.sln`) and the API project (`src/LogViewerApi/LogViewerApi.csproj`) targeting `net9.0` with `<Nullable>enable</Nullable>` and `<ImplicitUsings>enable</ImplicitUsings>`
 - [ ] Add NuGet package references to `LogViewerApi.csproj`: `Azure.Identity`, `Azure.Storage.Blobs`, `Microsoft.AspNetCore.OpenApi`
 - [ ] Create `src/LogViewerApi/Program.cs` with `WebApplication.CreateBuilder`, configure Kestrel to listen on `http://+:8080` by default, call `builder.Build()` and `app.Run()`
 - [ ] Add `BlobServiceClient` singleton DI registration in `Program.cs` — read `STORAGE_ACCOUNT_URL` from environment, throw on missing value, construct `new BlobServiceClient(new Uri(url), new DefaultAzureCredential())`
