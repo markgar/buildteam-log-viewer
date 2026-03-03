@@ -59,4 +59,4 @@ Source code lives in `src/LogViewerApi/` — this is the primary directory to ed
 - **Early-return on not-found.** Check for missing resources (container, prefix, blob) at the top of the endpoint handler and return 404 immediately rather than nesting the happy path.
 - **Interface-based DI for services.** Register services by interface so endpoint handlers depend on abstractions. This keeps handlers testable and decoupled from the Azure SDK.
 - **Environment variables for configuration.** No `appsettings.json` for secrets or deployment config — use environment variables exclusively and fail fast on startup if required values are missing.
-- **Fluent API only for endpoint mapping.** Use Minimal API's fluent `MapGet` / `WithName` / `WithOpenApi` chain for route definitions — no controller classes or attribute routing.
+- **Fluent API only for endpoint mapping.** Use Minimal API's fluent `MapGet` / `WithName` chain for route definitions — no controller classes or attribute routing.
