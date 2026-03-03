@@ -22,5 +22,5 @@
 
 ### Response DTOs
 
-- [ ] Create `Models/LogItemInfo.cs` — `public record LogItemInfo(string Name, long Size, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
+- [x] Create `Models/LogItemInfo.cs` — `public record LogItemInfo(string Name, long Size, DateTimeOffset LastModified)` in namespace `LogViewerApi.Models`
 - [ ] Create `Models/LogListResponse.cs` — `public record LogListResponse(string ProjectId, string RunId, IReadOnlyList<LogItemInfo> Logs, IReadOnlyList<LogItemInfo> Prompts, IReadOnlyList<LogItemInfo> Artifacts)` in namespace `LogViewerApi.Models`
