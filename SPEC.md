@@ -6,12 +6,12 @@ Log Viewer API is a read-only REST API that exposes build-agent logs stored in A
 
 ## Tech Stack
 
-- **Language / Runtime:** C# / .NET 9
+- **Language / Runtime:** C# / .NET 10
 - **Framework:** ASP.NET Core Minimal API (top-level `Program.cs`, no controllers)
 - **Azure Auth:** `Azure.Identity` — `DefaultAzureCredential` (workload identity on AKS, CLI locally)
 - **Storage SDK:** `Azure.Storage.Blobs` — `BlobServiceClient` injected via DI
 - **OpenAPI:** Built-in `Microsoft.AspNetCore.OpenApi` (`AddOpenApi()` / `MapOpenApi()`)
-- **Container:** Multi-stage Dockerfile — `dotnet/sdk:9.0` build, `dotnet/aspnet:9.0` runtime
+- **Container:** Multi-stage Dockerfile — `dotnet/sdk:10.0` build, `dotnet/aspnet:10.0` runtime
 
 ## Architecture
 

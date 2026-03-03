@@ -22,6 +22,6 @@ docker run -e STORAGE_ACCOUNT_URL=https://<account>.blob.core.windows.net -p 808
 
 ## Develop
 
-- .NET 9 SDK required
+- .NET 10 SDK required
 - Authenticate locally via `az login` (DefaultAzureCredential falls back to Azure CLI)
 - Swagger UI available at `/swagger` when running

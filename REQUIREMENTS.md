@@ -61,11 +61,11 @@ The number of builder, reviewer, and spawn logs is dynamic — the API must disc
 
 ## Tech Stack
 
-- **Language:** C# / .NET 9
+- **Language:** C# / .NET 10
 - **Framework:** ASP.NET Core Minimal API
 - **Authentication to Azure:** `Azure.Identity` (`DefaultAzureCredential`)
 - **Storage SDK:** `Azure.Storage.Blobs`
-- **Container image:** Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:9.0` for build and `mcr.microsoft.com/dotnet/aspnet:9.0` for runtime
+- **Container image:** Multi-stage Dockerfile using `mcr.microsoft.com/dotnet/sdk:10.0` for build and `mcr.microsoft.com/dotnet/aspnet:10.0` for runtime
 
 ## API Endpoints
 
@@ -243,7 +243,7 @@ Response:
 
 - Expose an OpenAPI 3.0 document at `GET /openapi/v1.json`
 - Serve Swagger UI at `GET /swagger` (redirects to `/swagger/index.html`)
-- Use .NET 9's built-in `Microsoft.AspNetCore.OpenApi` support (`AddOpenApi()` / `MapOpenApi()`) — no Swashbuckle needed
+- Use .NET 10's built-in `Microsoft.AspNetCore.OpenApi` support (`AddOpenApi()` / `MapOpenApi()`) — no Swashbuckle needed
 - All endpoints, parameters, and response schemas must be represented in the generated OpenAPI document
 
 ## Error Handling
