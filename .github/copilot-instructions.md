@@ -26,7 +26,7 @@ This software is written with assistance from GitHub Copilot. The code is struct
 
 ## Project structure
 
-Source code lives in `src/LogViewerApi/` — this is the primary directory to edit. It contains a single ASP.NET Core Minimal API project with subdirectories for `Endpoints/`, `Services/`, and `Models/`. Tests live in a separate xUnit project alongside the source. Kubernetes manifests live in `k8s/` and the Dockerfile lives at the repository root.
+Source code lives in `src/LogViewerApi/` — this is the primary directory to edit. It contains a single ASP.NET Core Minimal API project with subdirectories for `Endpoints/`, `Services/`, and `Models/`. Tests live in a separate xUnit project alongside the source. Kubernetes manifests live in `k8s/`. The Dockerfile lives at the repository root.
 
 ## Key files
 
@@ -35,6 +35,9 @@ Source code lives in `src/LogViewerApi/` — this is the primary directory to ed
 - `BACKLOG.md` — Ordered backlog of implementation milestones
 - `README.md` — Project overview and getting-started guide
 - `.gitignore` — Ignore rules for .NET build output, IDE files, and secrets
+- `Dockerfile` — Multi-stage Docker build (SDK build, aspnet runtime)
+- `k8s/deployment.yaml` — Kubernetes Deployment manifest for AKS
+- `k8s/service.yaml` — Kubernetes Service manifest (ClusterIP, port 80 → 8080)
 
 ## Architecture
 

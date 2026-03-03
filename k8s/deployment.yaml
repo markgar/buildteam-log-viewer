@@ -19,6 +19,13 @@ spec:
           image: log-viewer-api:latest
           ports:
             - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
           env:
             - name: STORAGE_ACCOUNT_URL
               value: ""
