@@ -8,7 +8,7 @@ public static class LogEndpoints
     public static WebApplication MapLogEndpoints(this WebApplication app)
     {
         app.MapGet("/projects/{projectId}/runs/{runId}/logs/{**fileName}",
-            async (string projectId, string runId, string fileName, bool raw, long offset, IBlobStorageService service, CancellationToken ct) =>
+            async (string projectId, string runId, string fileName, bool raw, long offset, IBlobStorageService service, HttpContext context, CancellationToken ct) =>
         {
             var projectExists = await service.ProjectExistsAsync(projectId, ct);
             if (!projectExists)
@@ -24,6 +24,10 @@ public static class LogEndpoints
 
             if (raw)
             {
+                if (offset > 0)
+                {
+                    context.Response.Headers["Content-Range"] = $"bytes {offset}-{result.Size - 1}/{result.Size}";
+                }
                 return Results.Text(result.Content, result.ContentType);
             }
 
