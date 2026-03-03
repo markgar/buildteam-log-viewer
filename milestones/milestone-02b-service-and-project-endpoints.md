@@ -17,7 +17,7 @@
 ### Service layer
 
 - [x] Add `Task<List<ProjectInfo>> ListProjectsAsync()` to `IBlobStorageService` and implement in `BlobStorageService` — enumerate all containers via `_blobServiceClient.GetBlobContainersAsync()`, map each `BlobContainerItem` to `new ProjectInfo(item.Name, item.Properties.LastModified ?? DateTimeOffset.MinValue)`, return the list
-- [ ] Add `Task<RunListResponse?> ListRunsAsync(string projectId)` to `IBlobStorageService` and implement in `BlobStorageService` — get container client via `_blobServiceClient.GetBlobContainerClient(projectId)`, verify container exists by calling `containerClient.GetPropertiesAsync()` wrapped in try/catch for `RequestFailedException` with `Status == 404` (return `null` on not found), list all blobs via `containerClient.GetBlobsAsync()`, group by first path segment (split blob name on `"/"` and take first element), compute max `LastModified` per group, construct `RunInfo` for each group with the segment as `Id` and max date as `LastModified`, return `new RunListResponse(projectId, runs)`
+- [x] Add `Task<RunListResponse?> ListRunsAsync(string projectId)` to `IBlobStorageService` and implement in `BlobStorageService` — get container client via `_blobServiceClient.GetBlobContainerClient(projectId)`, verify container exists by calling `containerClient.GetPropertiesAsync()` wrapped in try/catch for `RequestFailedException` with `Status == 404` (return `null` on not found), list all blobs via `containerClient.GetBlobsAsync()`, group by first path segment (split blob name on `"/"` and take first element), compute max `LastModified` per group, construct `RunInfo` for each group with the segment as `Id` and max date as `LastModified`, return `new RunListResponse(projectId, runs)`
 
 ### Endpoints
 
