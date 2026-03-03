@@ -95,7 +95,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 33 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project/run endpoint integration tests)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 51 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, exception handler integration)
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
