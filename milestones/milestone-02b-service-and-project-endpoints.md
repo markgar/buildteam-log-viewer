@@ -21,6 +21,6 @@
 
 ### Endpoints
 
-- [ ] Create `Endpoints/ProjectEndpoints.cs` with static class and `MapProjectEndpoints(this WebApplication app)` extension method containing `GET /projects` — inject `IBlobStorageService`, call `ListProjectsAsync()`, return `Results.Ok(new ProjectListResponse(projects))`, chain `.WithName("ListProjects").WithOpenApi()`
+- [x] Create `Endpoints/ProjectEndpoints.cs` with static class and `MapProjectEndpoints(this WebApplication app)` extension method containing `GET /projects` — inject `IBlobStorageService`, call `ListProjectsAsync()`, return `Results.Ok(new ProjectListResponse(projects))`, chain `.WithName("ListProjects").WithOpenApi()`
 - [ ] Add `GET /projects/{projectId}/runs` route to `ProjectEndpoints.MapProjectEndpoints` — inject `IBlobStorageService`, call `ListRunsAsync(projectId)`, if result is `null` return `Results.NotFound(new ErrorResponse("Project not found"))`, otherwise return `Results.Ok(result)`, chain `.WithName("ListRuns").WithOpenApi()`
 - [ ] Register project endpoints in `Program.cs` — add `app.MapProjectEndpoints()` call after `app.MapHealthEndpoints()`
