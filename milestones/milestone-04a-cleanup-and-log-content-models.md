@@ -17,7 +17,7 @@
 ### Cleanup — fix open findings
 
 - [x] Fix StubBlobStorageService compilation: add `ProjectExistsAsync(string projectId)` returning `Task<bool>` (check if `RunsByProject.ContainsKey(projectId)`) and `ListRunLogsAsync(string projectId, string runId)` returning `Task<LogListResponse?>` (return null) to satisfy `IBlobStorageService` interface — add `Dictionary<string, LogListResponse> LogsByProjectAndRun` property for LogListResponse lookups (fixes #45)
-- [ ] Remove duplicate `validation-results.txt` entry from `.gitignore` — the file currently has this line twice at the end (fixes #44)
+- [x] Remove duplicate `validation-results.txt` entry from `.gitignore` — the file currently has this line twice at the end (fixes #44)
 - [ ] Extract private `ContainerExistsAsync(BlobContainerClient containerClient)` helper in `BlobStorageService` returning `Task<bool>` — try `containerClient.GetPropertiesAsync()` and return `true`, catch `RequestFailedException` when `Status == 404` and return `false`, then refactor `ProjectExistsAsync` and `ListRunsAsync` to call this helper instead of duplicating the try/catch pattern (fixes #47)
 - [ ] Save/restore `STORAGE_ACCOUNT_URL` env var in `ExceptionHandlerIntegrationTests` and `ProjectEndpointIntegrationTests` — add `private readonly string? _savedStorageAccountUrl` field, save current value in constructor before overwriting, restore in `Dispose()` via `Environment.SetEnvironmentVariable("STORAGE_ACCOUNT_URL", _savedStorageAccountUrl)` to match the pattern already used in `CustomWebApplicationFactory` (fixes #46)
 
