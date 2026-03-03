@@ -11,7 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    var port = int.TryParse(Environment.GetEnvironmentVariable("PORT"), out var p) ? p : 8080;
+    var portEnv = Environment.GetEnvironmentVariable("PORT");
+    var port = 8080;
+    if (portEnv is not null)
+    {
+        if (!int.TryParse(portEnv, out port) || port < 1 || port > 65535)
+        {
+            throw new InvalidOperationException(
+                $"PORT environment variable must be an integer between 1 and 65535, got: '{portEnv}'");
+        }
+    }
     options.ListenAnyIP(port);
 });
 
@@ -67,8 +76,5 @@ app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "Log Viewer API");
 });
-
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
-    .WithName("Health");
 
 app.Run();
