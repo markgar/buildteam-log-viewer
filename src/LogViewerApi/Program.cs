@@ -3,6 +3,7 @@ using Azure.Identity;
 using Azure.Storage.Blobs;
 using System.Text.Json;
 using LogViewerApi.Models;
+using LogViewerApi.Services;
 using Microsoft.AspNetCore.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ if (!Uri.TryCreate(storageAccountUrl, UriKind.Absolute, out var storageUri))
 }
 
 builder.Services.AddSingleton(new BlobServiceClient(storageUri, new DefaultAzureCredential()));
+builder.Services.AddSingleton<IBlobStorageService, BlobStorageService>();
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -56,5 +58,8 @@ app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/openapi/v1.json", "Log Viewer API");
 });
+
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }))
+    .WithName("Health");
 
 app.Run();
