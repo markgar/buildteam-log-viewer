@@ -7,6 +7,7 @@ namespace LogViewerApi.Services;
 
 public class BlobStorageService : IBlobStorageService
 {
+    private const long MaxContentResponseBytes = 10 * 1024 * 1024; // 10 MB
     private readonly BlobServiceClient _blobServiceClient;
 
     public BlobStorageService(BlobServiceClient blobServiceClient)
@@ -117,15 +118,17 @@ public class BlobStorageService : IBlobStorageService
 
         try
         {
+            var rangeLength = Math.Min(blobSize - offset, MaxContentResponseBytes);
             var downloadOptions = new BlobDownloadOptions
             {
-                Range = new HttpRange(offset, blobSize - offset)
+                Range = new HttpRange(offset, rangeLength)
             };
             var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
             using var reader = new StreamReader(download.Value.Content);
             var content = await reader.ReadToEndAsync(cancellationToken);
 
-            return new BlobContentResult(content, blobSize, blobSize, lastModified, contentType);
+            var endOffset = offset + rangeLength;
+            return new BlobContentResult(content, blobSize, endOffset, lastModified, contentType);
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {

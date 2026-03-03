@@ -25,6 +25,8 @@ public static class LogEndpoints
 
             return Results.Ok(result);
         })
+            .Produces<LogTailResponse>(StatusCodes.Status200OK)
+            .Produces<ErrorResponse>(StatusCodes.Status404NotFound)
             .WithName("TailLog")
             .WithOpenApi();
 
@@ -61,6 +63,8 @@ public static class LogEndpoints
             return Results.Ok(new LogContentResponse(
                 projectId, runId, fileName, result.Size, result.Offset, result.LastModified, result.Content));
         })
+            .Produces<LogContentResponse>(StatusCodes.Status200OK)
+            .Produces<ErrorResponse>(StatusCodes.Status404NotFound)
             .WithName("GetLogContent")
             .WithOpenApi();
 

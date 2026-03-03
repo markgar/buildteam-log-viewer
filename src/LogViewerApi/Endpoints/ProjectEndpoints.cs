@@ -12,6 +12,7 @@ public static class ProjectEndpoints
             var projects = await service.ListProjectsAsync(ct);
             return Results.Ok(new ProjectListResponse(projects));
         })
+            .Produces<ProjectListResponse>(StatusCodes.Status200OK)
             .WithName("ListProjects")
             .WithOpenApi();
 
@@ -24,6 +25,8 @@ public static class ProjectEndpoints
             }
             return Results.Ok(new RunListResponse(projectId, runs));
         })
+            .Produces<RunListResponse>(StatusCodes.Status200OK)
+            .Produces<ErrorResponse>(StatusCodes.Status404NotFound)
             .WithName("ListRuns")
             .WithOpenApi();
 

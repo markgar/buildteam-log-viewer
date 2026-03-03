@@ -22,6 +22,8 @@ public static class HealthEndpoints
                     statusCode: StatusCodes.Status503ServiceUnavailable);
             }
         })
+            .Produces<HealthResponse>(StatusCodes.Status200OK)
+            .Produces<ErrorResponse>(StatusCodes.Status503ServiceUnavailable)
             .WithName("Health")
             .WithOpenApi();
 

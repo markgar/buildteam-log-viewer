@@ -23,6 +23,8 @@ public static class RunEndpoints
 
             return Results.Ok(result);
         })
+            .Produces<LogListResponse>(StatusCodes.Status200OK)
+            .Produces<ErrorResponse>(StatusCodes.Status404NotFound)
             .WithName("ListRunLogs")
             .WithOpenApi();
 
