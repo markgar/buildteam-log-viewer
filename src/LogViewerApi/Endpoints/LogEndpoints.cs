@@ -10,7 +10,7 @@ public static class LogEndpoints
         app.MapGet("/projects/{projectId}/runs/{runId}/logs/{fileName}/tail",
             async (string projectId, string runId, string fileName, int? lines, IBlobStorageService service, CancellationToken ct) =>
         {
-            var lineCount = lines ?? 100;
+            var lineCount = Math.Clamp(lines ?? 100, 1, 10000);
             var projectExists = await service.ProjectExistsAsync(projectId, ct);
             if (!projectExists)
             {
@@ -33,6 +33,10 @@ public static class LogEndpoints
         {
             var isRaw = raw ?? false;
             var byteOffset = offset ?? 0;
+            if (byteOffset < 0)
+            {
+                return Results.BadRequest(new ErrorResponse("Offset must be non-negative."));
+            }
             var projectExists = await service.ProjectExistsAsync(projectId, ct);
             if (!projectExists)
             {
@@ -47,7 +51,7 @@ public static class LogEndpoints
 
             if (isRaw)
             {
-                if (byteOffset > 0)
+                if (byteOffset > 0 && byteOffset < result.Size)
                 {
                     context.Response.Headers["Content-Range"] = $"bytes {byteOffset}-{result.Size - 1}/{result.Size}";
                 }

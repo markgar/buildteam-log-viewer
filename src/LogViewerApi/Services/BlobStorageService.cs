@@ -89,6 +89,9 @@ public class BlobStorageService : IBlobStorageService
 
     public async Task<BlobContentResult?> GetLogContentAsync(string projectId, string runId, string fileName, long offset, CancellationToken cancellationToken = default)
     {
+        if (offset < 0)
+            throw new ArgumentOutOfRangeException(nameof(offset), "Offset must be non-negative.");
+
         var containerClient = _blobServiceClient.GetBlobContainerClient(projectId);
         var blobPath = $"{runId}/{fileName}";
         var blobClient = containerClient.GetBlobClient(blobPath);
@@ -112,15 +115,22 @@ public class BlobStorageService : IBlobStorageService
             return new BlobContentResult("", blobSize, blobSize, lastModified, contentType);
         }
 
-        var downloadOptions = new BlobDownloadOptions
+        try
         {
-            Range = new HttpRange(offset, blobSize - offset)
-        };
-        var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
-        using var reader = new StreamReader(download.Value.Content);
-        var content = await reader.ReadToEndAsync(cancellationToken);
+            var downloadOptions = new BlobDownloadOptions
+            {
+                Range = new HttpRange(offset, blobSize - offset)
+            };
+            var download = await blobClient.DownloadStreamingAsync(downloadOptions, cancellationToken);
+            using var reader = new StreamReader(download.Value.Content);
+            var content = await reader.ReadToEndAsync(cancellationToken);
 
-        return new BlobContentResult(content, blobSize, blobSize, lastModified, contentType);
+            return new BlobContentResult(content, blobSize, blobSize, lastModified, contentType);
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            return null;
+        }
     }
 
     public async Task<LogTailResponse?> GetLogTailAsync(string projectId, string runId, string fileName, int lines, CancellationToken cancellationToken = default)
@@ -170,18 +180,19 @@ public class BlobStorageService : IBlobStorageService
         }
 
         var allLines = content.Split('\n');
+
+        // Remove trailing empty element caused by final newline before selecting tail lines
+        if (allLines.Length > 0 && allLines[^1] == "")
+        {
+            allLines = allLines[..^1];
+        }
+
         var tailLines = allLines.TakeLast(lines + 1).ToArray();
 
-        // If the first element is empty (blob started with partial line from chunk boundary), skip it
+        // Drop the first line if we have more than requested — it may be a partial line from the chunk boundary
         if (tailLines.Length > lines)
         {
             tailLines = tailLines.Skip(1).ToArray();
-        }
-
-        // Remove trailing empty line from final newline
-        if (tailLines.Length > 0 && tailLines[^1] == "")
-        {
-            tailLines = tailLines[..^1];
         }
 
         var actualLines = tailLines.Length;
