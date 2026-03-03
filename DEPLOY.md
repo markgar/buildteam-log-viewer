@@ -50,6 +50,7 @@
 - `GET /swagger/index.html` → 200 (Swagger UI HTML page)
 - `GET /projects` → 500 `{"error":"An unexpected error occurred"}` when storage unreachable (fake URL). **Bug:** Should return `{"error":"Storage account unavailable: ..."}` — see issue #35.
 - `GET /projects/nonexistent-project-xyz/runs` → 500 when storage unreachable (expected behavior)
+- `GET /projects/{projectId}/runs/{runId}/logs` → 500 when storage unreachable; 404 with `{"error":"Project not found"}` or `{"error":"Run not found"}` when storage reachable but resource missing
 
 ## PORT Validation
 
@@ -94,7 +95,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 20 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization)
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 33 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project/run endpoint integration tests)
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
@@ -108,6 +109,21 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
   RUN npm install
   COPY e2e/ ./
   ```
+
+## Log Endpoints (milestone 03b)
+
+New endpoint added:
+- `GET /projects/{projectId}/runs/{runId}/logs` — lists logs, prompts, and artifacts for a specific run. Returns `LogListResponse` (200), 404 with `{"error":"Project not found"}` or `{"error":"Run not found"}`, or 500 if storage unreachable.
+
+Service layer additions:
+- `ProjectExistsAsync(string projectId)` — checks if a container exists
+- `ListRunLogsAsync(string projectId, string runId)` — lists blobs under a run prefix, classifies into logs/prompts/artifacts
+
+Test stub fix:
+- `StubBlobStorageService` must implement `ProjectExistsAsync` and `ListRunLogsAsync` — the milestone added these to `IBlobStorageService` but didn't update the stub, causing test compilation failure. Fixed by adding stub implementations.
+
+Playwright test fix:
+- The Swagger UI test for `/projects/{projectId}/runs` endpoint used `hasText` filter which matched both `/runs` and `/runs/{runId}/logs`. Fixed by using `data-path` attribute selector instead.
 
 ## Known Gotchas
 

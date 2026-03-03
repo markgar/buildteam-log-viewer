@@ -64,7 +64,7 @@ test('Swagger UI shows /projects endpoint', async ({ page }) => {
 test('Swagger UI shows /projects/{projectId}/runs endpoint', async ({ page }) => {
   await page.goto('/swagger/index.html');
   await page.waitForLoadState('networkidle');
-  const runsPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/projects/{projectId}/runs' });
+  const runsPath = page.locator('.swagger-ui .opblock-summary-path[data-path="/projects/{projectId}/runs"]');
   await expect(runsPath).toBeVisible();
 });
 
@@ -95,4 +95,32 @@ test('OpenAPI spec contains /projects/{projectId}/runs path', async ({ request }
   expect(response.status()).toBe(200);
   const body = await response.json();
   expect(body.paths).toHaveProperty('/projects/{projectId}/runs');
+});
+
+test('OpenAPI spec contains /projects/{projectId}/runs/{runId}/logs path', async ({ request }) => {
+  const response = await request.get('/openapi/v1.json');
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body.paths).toHaveProperty('/projects/{projectId}/runs/{runId}/logs');
+});
+
+test('Swagger UI shows /projects/{projectId}/runs/{runId}/logs endpoint', async ({ page }) => {
+  await page.goto('/swagger/index.html');
+  await page.waitForLoadState('networkidle');
+  const logsPath = page.locator('.swagger-ui .opblock-summary-path', { hasText: '/logs' });
+  await expect(logsPath).toBeVisible();
+});
+
+test('GET /projects/nonexistent/runs/some-run/logs returns 404 or 500 with JSON error', async ({ request }) => {
+  const response = await request.get('/projects/nonexistent-project/runs/20260302-211501/logs');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
+});
+
+test('GET /projects/some-project/runs/nonexistent-run/logs returns 404 or 500 with JSON error', async ({ request }) => {
+  const response = await request.get('/projects/some-project/runs/nonexistent-run/logs');
+  expect([404, 500]).toContain(response.status());
+  const body = await response.json();
+  expect(body.error).toBeDefined();
 });
