@@ -99,7 +99,7 @@ The global exception handler in `Program.cs` only catches `Azure.RequestFailedEx
 
 ## Running Tests
 
-- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 57 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, log content endpoint, tail endpoint, exception handler integration). All pass as of milestone 04b.
+- **Unit tests:** `dotnet test LogViewerApi.sln` — runs 74 xUnit tests (health endpoint, OpenAPI, startup config, DI registration, error response serialization, response model serialization, project endpoint integration, run endpoint integration, run log endpoint cross-feature, log content endpoint, tail endpoint, exception handler integration, exception handler run logs integration). All pass as of milestone 05a.
 - **Playwright e2e:** Build a custom image with e2e files baked in, then run on the compose network:
   ```bash
   docker build -t pw-tests -f /tmp/Dockerfile.pw .
@@ -143,9 +143,9 @@ New model records added for upcoming log content and tail endpoints:
 - Removed duplicate `validation-results.txt` entry from `.gitignore` (fixes #44)
 - `StubBlobStorageService` now implements `ProjectExistsAsync` and `ListRunLogsAsync` with `LogsByProjectAndRun` dictionary (fixes #45)
 
-## Known Bug — Health Endpoint (issue #54)
+## Fixed Bug — Health Endpoint (issue #54, fixed in milestone 04b)
 
-The health endpoint catches `RequestFailedException` but not `AuthenticationFailedException` / `CredentialUnavailableException`. When `DefaultAzureCredential` can't get a token, the exception falls through to the global handler returning 500 instead of the health endpoint's intended 503 with `{"error":"Storage account unreachable"}`. This affects all environments without real Azure credentials.
+The health endpoint previously caught only `RequestFailedException` but not `AuthenticationFailedException`. This caused 500 responses instead of the intended 503 when `DefaultAzureCredential` could not obtain a token. Fixed by adding a catch block for `AuthenticationFailedException` in `HealthEndpoints.cs`.
 
 ## Log Content & Tail Endpoints (milestone 04b)
 
@@ -159,7 +159,7 @@ Service layer additions:
 - `GetLogContentAsync(projectId, runId, fileName, offset)` — downloads blob content from offset using range reads
 - `GetLogTailAsync(projectId, runId, fileName, lines)` — reads from end of blob, doubling chunk size until enough lines found
 
-Test count: 57 xUnit tests (up from 51 in milestone 04a).
+Test count: 74 xUnit tests (up from 51 in milestone 04a).
 
 Playwright test fix:
 - The Swagger UI test for `/projects/{projectId}/runs/{runId}/logs` endpoint used `hasText: '/logs'` which now matches 3 elements (logs list, content, tail). Fixed by using `data-path` attribute selector.

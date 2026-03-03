@@ -16,12 +16,7 @@ public static class HealthEndpoints
                 await service.CheckStorageHealthAsync(ct);
                 return Results.Ok(new HealthResponse("ok"));
             }
-            catch (RequestFailedException)
-            {
-                return Results.Json(new ErrorResponse("Storage account unreachable"),
-                    statusCode: StatusCodes.Status503ServiceUnavailable);
-            }
-            catch (AuthenticationFailedException)
+            catch (Exception ex) when (ex is RequestFailedException or AuthenticationFailedException)
             {
                 return Results.Json(new ErrorResponse("Storage account unreachable"),
                     statusCode: StatusCodes.Status503ServiceUnavailable);
